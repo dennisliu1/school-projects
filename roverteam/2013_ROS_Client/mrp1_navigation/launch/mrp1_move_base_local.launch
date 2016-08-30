@@ -1,0 +1,15 @@
+
+    <!--- Bring up robot with planar laser, imu, odometry, gazebo, tf -->
+    <include file="$(find mrp1_description)/launch/mrp1_simulation.launch" />
+
+    <!-- Throttle the voxel grid that is being published for rviz -->
+    <node ns="move_base_node/local_costmap" name="voxel_grid_throttle" pkg="topic_tools" type="throttle" args="messages voxel_grid 3.0 voxel_grid_throttled" />
+    <!-- for moving -->
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base_node" output="screen">
+        <remap from="odom" to="odom" />
+        <remap from="cmd_vel" to="cmd_vel" />
+    </node>
+
+    <!-- To save the map run the command -->
+    <!-- rosrun map_server map_saver -f mapfile -->
+    <node pkg="rviz" type="rviz" output="screen" name="rviz" args="-d $(find mrp1_navigation)/nav_rviz.vcg" />

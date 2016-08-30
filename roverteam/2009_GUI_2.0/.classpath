@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="GUI_2.0/src/lib/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="src/jars/cambozola.jar"/>
+	<classpathentry kind="lib" path="src/jars/com.jar"/>
+	<classpathentry kind="lib" path="src/jars/forms-1.2.0.jar"/>
+	<classpathentry kind="lib" path="src/jars/org.eclipse.core.commands_3.4.0.I20080509-2000.jar"/>
+	<classpathentry kind="lib" path="src/jars/org.eclipse.core.runtime_3.4.0.v20080512.jar"/>
+	<classpathentry kind="lib" path="src/jars/org.eclipse.equinox.common_3.4.0.v20080421-2006.jar"/>
+	<classpathentry kind="lib" path="src/jars/org.eclipse.equinox.registry_3.4.0.v20080516-0950.jar"/>
+	<classpathentry kind="lib" path="src/jars/org.eclipse.jface_3.4.1.M20080827-2000.jar"/>
+	<classpathentry kind="lib" path="src/jars/org.eclipse.jface.text_3.4.1.r341_v20080827-1100.jar"/>
+	<classpathentry kind="lib" path="src/jars/org.eclipse.osgi_3.4.2.R34x_v20080826-1230.jar"/>
+	<classpathentry kind="lib" path="src/jars/org.eclipse.text_3.4.0.v20080605-1800.jar"/>
+	<classpathentry kind="lib" path="src/jars/org.eclipse.ui.forms_3.3.101.v20080708_34x.jar"/>
+	<classpathentry kind="lib" path="src/jars/org.eclipse.ui.workbench_3.4.1.M20080827-0800a.jar"/>
+	<classpathentry kind="lib" path="src/lib/jar/jinput.jar"/>
+	<classpathentry kind="lib" path="src/lib/jar/lwjgl_test.jar"/>
+	<classpathentry kind="lib" path="src/lib/jar/lwjgl_util_applet.jar"/>
+	<classpathentry kind="lib" path="src/lib/jar/lwjgl_util.jar"/>
+	<classpathentry kind="lib" path="src/lib/jar/lwjgl-debug.jar"/>
+	<classpathentry kind="lib" path="src/lib/jar/lwjgl.jar"/>
+	<classpathentry kind="lib" path="swt.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

@@ -1,0 +1,30 @@
+gst-launch -v -e uvch264src device=/dev/video1 name=src auto-start=true \
+      src.vfsrc ! queue ! video/x-raw,format=\(string\)YUY2,width=320,height=240,framerate=10/1 ! xvimagesink sync=false \
+      src.vidsrc ! queue ! video/x-h264,width=1280,height=720,framerate=30/1 ! h264parse ! avdec_h264 ! xvimagesink sync=false
+
+gst-launch -v -e uvch264src device=/dev/video1 name=src auto-start=true src.vidsrc ! queue ! video/x-h264,width=1280,height=720,framerate=30/1 ! h264parse ! avdec_h264 ! xvimagesink sync=false
+
+Signal Amplifier = 
+Connector = 
+Router = 50 * 2
+Repeater = 30
+Omni Antennae = 50
+
+
+TP Link Wireless N Router (TL-WR1043ND) 
+D-Link Wireless N Range Extender(DAP-1360/RE) 
+2.4ghz 30dbm sma signal booster
+
+50 ohm n type connector cable
+
+
+gst-launch-1.0 -v -e v4l2src device=/dev/video1 ! video/x-h264,width=1280,height=720,framerate=30/1 ! tee name=t ! queue ! h264parse ! rtph264pay ! udpsink host=192.168.1.101 port=1234
+
+3 quarter inch standoffs
+
+arm:
+actuator x/y/z
+arm x/y/z
+open/close gripper
+rotate endeffector
+

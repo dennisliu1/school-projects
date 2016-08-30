@@ -1,0 +1,281 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "OperatorGUI.sublime-project",
+			"settings":
+			{
+				"buffer_size": 214,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/gui/VideoPanel.java",
+			"settings":
+			{
+				"buffer_size": 11545,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/dennis/.config/sublime-text-2/Packages/quarnster-SublimeJava-6f1cfc9/SublimeJava.sublime-settings",
+			"settings":
+			{
+				"buffer_size": 1758,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 54.0,
+		"selected_items":
+		[
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"package install",
+				"Package Control: Install Package"
+			],
+			[
+				"install package",
+				"Package Control: Install Package"
+			],
+			[
+				"pack",
+				"Preferences: Browse Packages"
+			]
+		],
+		"width": 602.0
+	},
+	"console":
+	{
+		"height": 153.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/home/dennis/.config/sublime-text-2/Packages/SublimeJava/SublimeJava.sublime-settings",
+		"/home/dennis/.config/sublime-text-2/Packages/quarnster-SublimeJava-6f1cfc9/SublimeJava.sublime-commands",
+		"/home/dennis/.config/sublime-text-2/Packages/SublimeJava/SublimeJava.sublime-commands",
+		"/home/dennis/workspace/eclipse/OperatorGUI/OperatorGUI.sublime-project",
+		"/home/dennis/etc.txt",
+		"/home/dennis/drive-Deploy.py",
+		"/home/dennis/workspace/eclipse/OperatorGUI/src/gui/component/GUIComponent.java",
+		"/home/dennis/.config/sublime-text-2/Packages/SublimeJava/SublimeJava.java",
+		"/home/dennis/.config/sublime-text-2/Packages/User/Preferences.sublime-settings",
+		"/home/dennis/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
+		"/home/dennis/drive-Arm.py",
+		"/home/dennis/email.txt",
+		"/home/dennis/SHAAKE Software Architecture.txt",
+		"/home/dennis/drive (URC try 2).py",
+		"/home/dennis/drive.py",
+		"/home/dennis/drive (LUNA).py",
+		"/home/dennis/drive (June 24 2012).py"
+	],
+	"find":
+	{
+		"height": 0.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"0,0,0",
+			"0,0",
+			"0,0,0,0,0,0",
+			"0,0,0,0,0",
+			"0,0,0,0",
+			"0,0,0",
+			"0,0",
+			"'",
+			"arm_motors = ['14.11','14.21','12.21','12.11','52.11']\nposition = [0,0,0]\nposition0 = [0,0,0]\n",
+			"position0 = [0,0,0]\n"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "OperatorGUI.sublime-project",
+					"settings":
+					{
+						"buffer_size": 214,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								151,
+								151
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "src/gui/VideoPanel.java",
+					"settings":
+					{
+						"buffer_size": 11545,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1782,
+								1782
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Java/Java.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 629.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/home/dennis/.config/sublime-text-2/Packages/quarnster-SublimeJava-6f1cfc9/SublimeJava.sublime-settings",
+					"settings":
+					{
+						"buffer_size": 1758,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1755,
+								1755
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"replace":
+	{
+		"height": 0.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true
+}

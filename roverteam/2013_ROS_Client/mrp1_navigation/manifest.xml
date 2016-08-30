@@ -1,0 +1,18 @@
+<package>
+  <description brief="mrp1_navigaton">
+
+     mrp1_navigation
+
+  </description>
+  <author>Vaibhav Kapoor</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/mrp1_navigaton</url>
+  <depend package="move_base"/>
+  <depend package="mrp1_description"/>
+  <depend package="mrp1_odometry"/>
+  <depend package="rviz"/>
+
+</package>
+
+

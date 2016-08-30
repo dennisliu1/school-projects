@@ -1,0 +1,13 @@
+local_costmap:
+  global_frame: /odom
+  robot_base_frame: /base_footprint
+  update_frequency: 5.0
+  publish_frequency: 2.0
+  static_map: false
+  #costmap stays centered around robot
+  rolling_window: true
+  #size of lunabin
+  width: 4.0 
+  height: 8.0
+  #pick highest resolution possible
+  resolution: 0.01 #0.05

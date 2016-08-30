@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="GUI/lib/native"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jar/jinput.jar"/>
+	<classpathentry kind="lib" path="lib/jar/Joystick.jar"/>
+	<classpathentry kind="lib" path="lib/jar/vlcj-1.1.4-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/jar/vlcj-1.1.4-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jar/vlcj-1.1.4-test-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jar/vlcj-1.1.4-test.jar"/>
+	<classpathentry kind="lib" path="lib/jar/vlcj-1.1.4.jar"/>
+	<classpathentry kind="lib" path="lib/jna/jna.jar"/>
+	<classpathentry kind="lib" path="lib/jna/linux-i386.jar"/>
+	<classpathentry kind="lib" path="lib/jna/win32-x86.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

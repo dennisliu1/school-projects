@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/19/trunk/guardian_2dnav/navigation_amcl
+END
+amcl_guardian.launch
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/19/trunk/guardian_2dnav/navigation_amcl/amcl_guardian.launch
+END
+move_base_amcl.launch
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/!svn/ver/19/trunk/guardian_2dnav/navigation_amcl/move_base_amcl.launch
+END

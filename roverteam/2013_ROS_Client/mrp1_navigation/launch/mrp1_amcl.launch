@@ -1,0 +1,28 @@
+<launch>
+    
+  <!--- Bring up robot with planar laser, imu, odometry, gazebo, tf -->
+  <include file="$(find mrp1_description)/launch/mrp1_simulation.launch" />
+
+  <!-- Run the map server -->
+  <arg name="map_file" default="$(find mrp1_navigation)/maps/lunapit-simulated.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+  
+  <!--- Run AMCL -->
+  <include file="$(find mrp1_navigation)/config/amcl_mrp1.launch" />
+
+  <!--- Run Move Base -->
+  <include file="$(find mrp1_navigation)/config/move_base_mrp1.launch" />
+
+  <!-- To save the map run the command -->
+  <!-- rosrun map_server map_saver -f mapfile -->
+  <node pkg="rviz" type="rviz" output="screen" name="rviz" args="-d $(find mrp1_navigation)/nav_rviz.vcg" />
+
+
+  
+  
+  
+
+
+
+
+</launch>

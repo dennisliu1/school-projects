@@ -1,0 +1,22 @@
+<launch>
+  <master auto="start"/>
+  <include file="$(find mrp1_description)/launch/mrp1_simulation.launch" />
+  <!-- Run the map server -->
+  <!-- rosrun map_server map_saver -f map_filename -->
+  <arg name="map_file" default="$(find mrp1_navigation)/maps/lunapit-simulated.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+  <!--- Run AMCL -->
+  <include file="$(find mrp1_navigation)/navigation_amcl/amcl_mrp1.launch" />
+
+  <!-- Run move_base -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <remap from="cmd_vel" to="cmd_vel" />
+    <remap from="scan" to="/mrp1_robot/laser_scan" />
+    <rosparam file="$(find mrp1_navigation)/navigation_config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find mrp1_navigation)/navigation_config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find mrp1_navigation)/navigation_config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find mrp1_navigation)/navigation_config/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find mrp1_navigation)/navigation_config/base_local_planner_params.yaml" command="load" />
+  </node>
+</launch>

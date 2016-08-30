@@ -1,0 +1,14 @@
+{
+	"folders":
+	[
+		{
+			"path": "/home/dennis/workspace/eclipse/OperatorGUI"
+		}
+	],
+  "settings" : {
+      "sublimejava_classpath":
+      [
+          "/home/dennis/workspace/eclipse/OperatorGUI/bin"
+      ]
+  }
+}

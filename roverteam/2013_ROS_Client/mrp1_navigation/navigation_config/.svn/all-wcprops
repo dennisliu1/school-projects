@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/6/trunk/trunk/summit_xl_sim_fuerte/summit_xl_2dnav/navigation_config
+END
+global_costmap_params.yaml
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/!svn/ver/6/trunk/trunk/summit_xl_sim_fuerte/summit_xl_2dnav/navigation_config/global_costmap_params.yaml
+END
+costmap_common_params.yaml
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/!svn/ver/6/trunk/trunk/summit_xl_sim_fuerte/summit_xl_2dnav/navigation_config/costmap_common_params.yaml
+END
+move_base_params.yaml
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svn/!svn/ver/6/trunk/trunk/summit_xl_sim_fuerte/summit_xl_2dnav/navigation_config/move_base_params.yaml
+END
+local_costmap_params.yaml
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/!svn/ver/6/trunk/trunk/summit_xl_sim_fuerte/summit_xl_2dnav/navigation_config/local_costmap_params.yaml
+END
+base_local_planner_params.yaml
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/!svn/ver/6/trunk/trunk/summit_xl_sim_fuerte/summit_xl_2dnav/navigation_config/base_local_planner_params.yaml
+END

@@ -1,0 +1,10 @@
+<Component>
+	<name>E.V.E.</name>
+	<ID>0</ID>
+	<dataType>_double</dataType>
+	<Data>0</Data>
+	<AccessType>R</AccessType>
+	<Components>
+		
+	</Components>
+</Component>
