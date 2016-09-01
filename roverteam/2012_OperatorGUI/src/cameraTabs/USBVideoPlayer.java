@@ -6,9 +6,8 @@ package cameraTabs;
  * Date: Mar 12, 2009.
  */
 
-import gui.VideoPanel;
-import gui.TabPanel.CameraInitsPanel;
-
+import GUI.TabPanel.CameraInitsPanel;
+import GUI.VideoPanel;
 import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.Image;
@@ -152,22 +151,21 @@ public class USBVideoPlayer {
 	
 	public void handleConnectionRequest() {
 		try {
-			if(socket == null) {
-				this.hostname = this.addressTA.getText();
-				this.startPort = Integer.parseInt(this.portTA.getText());
-				socket = new Socket(hostname, startPort);
-				System.out.println("Connected");
-				out = socket.getOutputStream();
-				in = socket.getInputStream();
-	
-				System.out.println("Connected2");
-	
-				// Start a new frame grabber
-				// getDisplay().asyncExec(new grabFramesTask());
-				grabThread = new grabFramesTask();
-				USBCameraThread = new Thread(grabThread);
-				USBCameraThread.start();
-			}
+			this.hostname = this.addressTA.getText();
+			this.startPort = Integer.parseInt(this.portTA.getText());
+			socket = new Socket(hostname, startPort);
+			System.out.println("Connected");
+			out = socket.getOutputStream();
+			in = socket.getInputStream();
+
+			System.out.println("Connected2");
+
+			// Start a new frame grabber
+			// getDisplay().asyncExec(new grabFramesTask());
+			grabThread = new grabFramesTask();
+			USBCameraThread = new Thread(grabThread);
+			USBCameraThread.start();
+
 		} catch (ConnectException e) {
 			if (e.getMessage().equals("Connection refused"))
 				System.out.println("Connection Refused");
@@ -304,14 +302,24 @@ public class USBVideoPlayer {
 //--------------------------------		NEW CODE	-----------------------------------------------------------------//
 					if(socket != null) {
 						imgIcon = new ImageIcon(jpg_buf);
-						img = imgIcon.getImage();
-						videoWidth = width1;
-						videoHeight = height1;
-						ratioNum = Math.min((videoWidth / ratioA), (videoHeight / ratioB));
-						videoWidth = ratioA * ratioNum;
-						videoHeight = ratioB * ratioNum;
-						panel.getFrame(img, x1,y1, videoWidth, videoHeight, tabNum, videoNum);
-						panel.updateDisplay();
+			        img = imgIcon.getImage();
+							//img = img.getScaledInstance(960,720, Image.SCALE_DEFAULT);
+			        //
+			      //  System.out.println(imgIcon.toString());
+			        //System.out.println(img.getHeight(null));
+			        //img = img.getScaledInstance(img.getWidth(null), img.getHeight(null), Image.SCALE_DEFAULT);
+			        //img = img.getScaledInstance(cameraCanvas.getWidth(), cameraCanvas.getHeight(), Image.SCALE_DEFAULT);
+							//cameraCanvas.getGraphics().drawImage(img, 0, 0, width, height, null);
+							videoWidth = width1;
+							videoHeight = height1;
+							ratioNum = Math.min((videoWidth / ratioA), (videoHeight / ratioB));
+							videoWidth = ratioA * ratioNum;
+							videoHeight = ratioB * ratioNum;
+							//System.out.printf("W:%d H:%d %d:%d\n", videoWidth, videoHeight, (videoWidth / ratioA), (videoHeight / ratioB));
+							//cameraCanvas.getGraphics().drawImage(img, 0, 0, videoWidth, videoHeight, null);
+							//cameraCanvas.getGraphics().drawImage(img, 0,0, null);
+							panel.getFrame(img, x1,y1, videoWidth, videoHeight, tabNum, videoNum);
+							//panel.repaint();
 					}
 				} catch (NumberFormatException e) {
 					System.out.println("Number oops: " + e.getMessage());
@@ -343,7 +351,7 @@ public class USBVideoPlayer {
 				in.close();
 				socket.close();
 				System.out.println("Closed Connection");
-				socket = null;
+
 			} catch (IOException e) { }
 		}
 	}

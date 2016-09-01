@@ -1,17 +1,14 @@
-package gui;
+package GUI;
 
+import Comm.ParamFunction;
+import Comm.TCP.TCPClient;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
 
-import comm.ParamFunction;
-import comm.TCP.TCPClient;
-
 /**
- * The GUI interface to control the TCP Connection required for the Compass/Tilt sensor.
- * This is only the Java Swing interface for it, not the connection! Please refer to TCPClient for info on that.
- * 
+ *
  * @version 1.0
  * @author Dennis Liu, YURT 2012
  */

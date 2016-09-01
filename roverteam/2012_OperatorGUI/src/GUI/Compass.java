@@ -1,6 +1,4 @@
-package gui.component;
-
-
+package GUI;
 
 import java.awt.*;
 import java.util.Scanner;
@@ -29,7 +27,7 @@ public class Compass extends GUIComponent{
  private double middle;
  private int startLine, endLine;
  private Font font = new Font("Arial", Font.PLAIN, 20);
- private int offset;
+ public UpdateDegreeFunction updateCompass;
 //---------------------------             CONSTRUCTORS             ---------------------------//
 	public Compass(int x, int y, int width, int height, float transparency, long[] degree) {
 	  super(x, y, width, height, transparency);
@@ -51,27 +49,26 @@ public class Compass extends GUIComponent{
 		this(x,y, DEFAULT_WIDTH,DEFAULT_HEIGHT,transparency);
 	}
 	private void initVars() {
+		//startLine = DEFAULT_DIST_SMALL_TICKS * ((this.getWidth() / DEFAULT_DIST_SMALL_TICKS) / 2);
 		startLine = DEFAULT_MARGIN + DEFAULT_DIST_SMALL_TICKS*((DEFAULT_DIST_SMALL_TICKS_NUM/2)+DEFAULT_DIST_SMALL_TICKS_NUM%2);
 		endLine = this.getHeight() - (this.getHeight() / 4);
-		offset = 0;
+		updateCompass = new UpdateDegreeFunction(rotate);
 	}
 //---------------------------             FUNCTIONS             ---------------------------//
-	public int getOffset() {
-		return offset;
-	}
-	public void setOffset(int offset) {
-		this.offset = offset;
-	}
 	public void setTelemetry(long[] degree) {
 		this.rotate = degree;
 	}
+	public void updateDisplay(){  // updates the panel
+		this.repaint();
+	}
+ 
 	public void paintBuffer(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setFont(font);    // setting font and size of numbers
 		super.paintComponent(g);			    // clears screen before painting
 		g2.setColor(DEFAULT_COMPASS_TICK_COLOR);
 		g2.drawRect(0, 0, width-1, height-1);
-		middle = (double) ((int) rotate[0]+offset - ((this.getWidth() / DEFAULT_DIST_SMALL_TICKS) / 2));//tick amount on screen
+		middle = (double) ((int) rotate[0] - ((this.getWidth() / DEFAULT_DIST_SMALL_TICKS) / 2));//tick amount on screen
 		// left most number (used to determine the middle number)
 		for(int i = 0; i <= this.getWidth(); i = i + DEFAULT_DIST_SMALL_TICKS) {
 			if(middle < 0) middle = 360 + middle;// if degree is ever negative than add 360 (makes sure the current degree is correct)
@@ -86,6 +83,7 @@ public class Compass extends GUIComponent{
 				g2.setColor(DEFAULT_COMPASS_TICK_COLOR);
 				g2.drawLine(i, this.getHeight()-DEFAULT_VERTI_MARGIN, i, this.getHeight() - DEFAULT_LARGE_TICK_HEIGHT-DEFAULT_VERTI_MARGIN);
 				g2.setColor(DEFAULT_COMPASS_NUM_COLOR);
+				//g2.drawString("" + ((int) middle), i - 10, this.getHeight() - DEFAULT_TICK_HEIGHT-DEFAULT_VERTI_MARGIN);  // draws number
 				g2.drawString(DEFAULT_COMPASS_STRINGS[(int)middle/DEFAULT_LARGE_TICKS_DIV], i - 10, this.getHeight() - DEFAULT_LARGE_TICK_HEIGHT-DEFAULT_VERTI_MARGIN-3);  // draws number
 			}
 			middle++;
@@ -101,19 +99,27 @@ public class Compass extends GUIComponent{
 		g2.drawString(""+rotate[0], width/2+10, height-4);
 		g2.setColor(Color.BLACK);
 	}
+
+	private class UpdateDegreeFunction extends UpdateFunction {
+		private long[] input;
+		private long oldDegree;
+
+		public UpdateDegreeFunction(long[] input) {
+			this.input = input;
+			this.oldDegree = this.input[0];//default current time display
+		}
+
+		public boolean checkValues() {
+			return (oldDegree != input[0]);
+		}
+
+		public void doUpdate() {
+			oldDegree = input[0];//update old time
+			updateDisplay();//update timer display
+		}
+	}//UpdateDegreeFunction class
+	
 //------------------------------        TEST         ---------------------------//
-	public static void main(String[] args){
-		long[] d = new long[1];
-		JFrame f = new JFrame();
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		f.setLayout(null);
-		f.setSize(800, 450);
-		Compass p = new Compass(0, 0,1f, d);
-			TestThread t = new TestThread(d, p);
-			t.start();
-		f.getContentPane().add(p);
-		f.setVisible(true);
-	}
 	private static class TestThread extends Thread {
 		Scanner inp = new Scanner(System.in);
 		boolean isRunning = true;
@@ -135,5 +141,18 @@ public class Compass extends GUIComponent{
 					try { Thread.sleep(1000); } catch (InterruptedException e) { }
 			}
 		}
+	}
+
+	public static void main(String[] args){
+		long[] d = new long[1];
+		JFrame f = new JFrame();
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		f.setLayout(null);
+		f.setSize(800, 450);
+		Compass p = new Compass(0, 0,1f, d);
+			TestThread t = new TestThread(d, p);
+			t.start();
+		f.getContentPane().add(p);
+		f.setVisible(true);
 	}
 }//Compass class

@@ -1,8 +1,6 @@
-package gui.testing;
+package GUI;
 
 
-
-import gui.component.GUIComponent;
 
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -57,5 +55,6 @@ public class WarningSystem extends GUIComponent {
 			else warnPanel.setTransparency(0f);
 		}
 	}
+	
 }		
 

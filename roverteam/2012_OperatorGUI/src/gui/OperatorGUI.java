@@ -1,20 +1,8 @@
-package gui;
+package GUI;
 
-import gui.TabPanel.CamSettingsPanel;
-import gui.component.Compass;
-import gui.component.GuideLinesPanel;
-import gui.component.LagMeter;
-import gui.component.PowerBar;
-import gui.component.RoverPicPanel;
-import gui.component.SignalPanel;
-import gui.component.SpeedBar;
-import gui.component.TablePanel;
-import gui.component.TiltSensor4;
-import gui.component.TimerPanel;
-import gui.testing.ArmPicPanel;
-import gui.testing.LunabotPicPanel;
-import gui.testing.Threader;
-import gui.testing.WarningSystem;
+/*
+
+ */
 
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
@@ -30,22 +18,21 @@ import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 
-import comm.TCP.TCPClient;
-import comm.UDP.UDPClient;
-
 import zRovermodel.ClientTelemetry;
-import zRovermodel.Component;
-import zRovermodel.Robot;
-import zRovermodel.SerializedComponent;
 import zRovermodel.YURTRover;
+import Comm.TCP.TCPClient;
+import Comm.UDP.UDPClient;
+import GUI.TabPanel.CamSettingsPanel;
 
 /**
- * The main program for the GUI. starts the GUI, creates the frame and adds the transparent components and video.
+ * Test
+ * sudo gst-launch rtspsrc latency=0 location=rtsp://192.168.80.100:9400/stream ! decodebin ! xvimagesink sync=false
+ * 
+ * Glen
+ * sudo gst-launch rtspsrc latency=0 location=rtsp://192.168.80.100:9400/stream ! decodebin ! xvimagesink sync=false
  * @author Dennis
  */
 public class OperatorGUI extends JPanel implements MouseListener {
-//	public static final String ROVER_IP = "192.168.251.1";
-	public static final String ROVER_IP = "localhost";
 	public static final int GUI_DEBUG_MODE = 0;
 	public static final int GUI_LUNABOTICS_MODE = 10;
 	private static final int GUI_URC_MODE = 20;
@@ -53,22 +40,12 @@ public class OperatorGUI extends JPanel implements MouseListener {
 	public static final int GUI_URC_SURVEYING_MODE = 22;
 	public static final int GUI_URC_SCIENCE_MODE = 23;
 	public static final int GUI_URC_ASTRONAUT_MODE = 24;
-	
-	public static final int DEFAULT_UNUSED_RESET_TIME = -1;
-	public static final int DEFAULT_UNUSED_READ_TIME = -1;
-	public static final int DEFAULT_RESET_TIME = 10000;
-	public static final int DEFAULT_READ_TIME = 1000;
-	
-	public String defaultIP = "localhost";
-	public String defaultPort = "4000";
-	
 	private int mode;
 	private JLayeredPane layers;
 	private int width, height;
-	private OperatorGUI self = this;
 //------------------------------            GUICOMPONENT VARIABLES AND DATA              ---------------------	
 	private float trans;
-	/** whether the panel is added */private ArrayList<Boolean> panelAdded;
+	private ArrayList<Boolean> panelAdded;
 	VideoPanel videoPanel = null;
 		float videoPanelTrans;
 	VideoPanel pipPanel = null;
@@ -88,7 +65,7 @@ public class OperatorGUI extends JPanel implements MouseListener {
 	PowerBar powerPanel = null;
 		float powerPanelTrans;
 		double[] power;
-	SpeedBar speedPanel = null;
+	Speed speedPanel = null;
 		float speedPanelTrans;
 		ArrayList<double[]> speeds;
 	WarningSystem warningPanel1 = null;
@@ -115,23 +92,15 @@ public class OperatorGUI extends JPanel implements MouseListener {
 		int[] canfields;
 	GuideLinesPanel guideLinesPanel;
 		float guideLinesPanelTrans;
-	SignalPanel signalPanel;
-		float signalPanelTrans;
-		String[] signal;
 	YURTRover rover;
 //----------------------------------                                  ----------------------------------------//
+	Threader threadController;
 	UDPClient client2;
 	ClientTelemetry tele2;
 	public GUIKeyListener keys;
 	TCPClient client;
 	CompassTelemetry compassTele;
-	
-	/**
-	 * Constructs the GUI. 
-	 * @param width
-	 * @param height
-	 * @param mode
-	 */
+		
 	public OperatorGUI(int width, int height, int mode) {
 		super();
 		this.width = width;
@@ -140,84 +109,60 @@ public class OperatorGUI extends JPanel implements MouseListener {
 		layers.setPreferredSize(new Dimension(width,height));// set size
 		this.setPreferredSize(new Dimension(width,height));
 		this.add(layers);
-		keys = new GUIKeyListener();// Add key listener to the GUI; only for first focus though; needs to also go to JTabbedPane (where focus is usually in)
-		rover = YURTRover.defaultRoverModel();// builds a rover model for the telemetry model to use
-		
-		ArrayList<SerializedComponent> roverComponents = new ArrayList<SerializedComponent>();
-//		roverComponents.add(new YURTRover("Front21", 21, Component._dataType._int, "21"));
-//		roverComponents.add(new YURTRover("Rear22", 22, Component._dataType._int, "22"));
-//		roverComponents.add(new YURTRover("Luna23", 23, Component._dataType._int, "23"));
-//		roverComponents.add(new YURTRover("Bckt110", 110, Component._dataType._int, "110"));
-//		roverComponents.add(new YURTRover("Ctrl12", 12, Component._dataType._int, "12"));
-		roverComponents.add(new YURTRover("Front22", 22, Component._dataType._int, "21"));
-		roverComponents.add(new YURTRover("Rear23", 23, Component._dataType._int, "22"));
-		roverComponents.add(new YURTRover("extr12", 12, Component._dataType._int, "23"));
-		roverComponents.add(new YURTRover("extr14", 14, Component._dataType._int, "110"));
-		roverComponents.add(new YURTRover("extr15", 15, Component._dataType._int, "12"));
-		
-		for(int i = 0; i < roverComponents.size(); i++) {
-			//Motor 1
-			roverComponents.get(i).addComponent(new YURTRover("Client ID", 0, Component._dataType._int, "-1", Robot.READ_ONLY));// Device ID
-			roverComponents.get(i).addComponent(new YURTRover("Power", 11, Component._dataType._int, "0", Robot.READ_WRITE, -128d, 127d));// [-128,127]
-			roverComponents.get(i).addComponent(new YURTRover("Brake", 12, Component._dataType._int, "1", Robot.READ_WRITE, 0, 1));// [0,1]
-			roverComponents.get(i).addComponent(new YURTRover("Position", 13, Component._dataType._int, "", Robot.READ_WRITE, Integer.MIN_VALUE, Integer.MAX_VALUE));// [0,1]
-			roverComponents.get(i).addComponent(new YURTRover("Brake", 14, Component._dataType._int, "", Robot.READ_ONLY, 0, 7));
-			roverComponents.get(i).addComponent(new YURTRover("Driver Vcc", 15, Component._dataType._int, "", Robot.READ_ONLY, 0, 1023));// [0, 1023]
-			roverComponents.get(i).addComponent(new YURTRover("Load Current", 16, Component._dataType._int, "", Robot.READ_ONLY, 0, 1023));// [0, 1023]
-			roverComponents.get(i).addComponent(new YURTRover("Timer", 17, Component._dataType._int, "", Robot.READ_WRITE, 0, Integer.MAX_VALUE));// [0, 2^32-1]
-			//Motor 2
-			roverComponents.get(i).addComponent(new YURTRover("Power", 21, Component._dataType._int, "0", Robot.READ_WRITE, -128d, 127d));// [-128,127]
-			roverComponents.get(i).addComponent(new YURTRover("Brake", 22, Component._dataType._int, "1", Robot.READ_WRITE, 0, 1));// [0,1]
-			roverComponents.get(i).addComponent(new YURTRover("Position", 23, Component._dataType._int, "", Robot.READ_WRITE, Integer.MIN_VALUE, Integer.MAX_VALUE));// [0,1]
-			roverComponents.get(i).addComponent(new YURTRover("Brake", 24, Component._dataType._int, "", Robot.READ_ONLY, 0, 7));
-			roverComponents.get(i).addComponent(new YURTRover("Driver Vcc", 25, Component._dataType._int, "", Robot.READ_ONLY, 0, 1023));// [0, 1023]
-			roverComponents.get(i).addComponent(new YURTRover("Load Current", 26, Component._dataType._int, "", Robot.READ_ONLY, 0, 1023));// [0, 1023]
-			roverComponents.get(i).addComponent(new YURTRover("Timer", 27, Component._dataType._int, "", Robot.READ_WRITE, 0, Integer.MAX_VALUE));// [0, 2^32-1]
-			
-			for(int j = 0; j < roverComponents.get(i).getComponents().size(); j++) {
-				((SerializedComponent)roverComponents.get(i).getComponents().get(j)).setResetTimer(DEFAULT_RESET_TIME);
-				((SerializedComponent)roverComponents.get(i).getComponents().get(j)).setReadTimer(DEFAULT_UNUSED_READ_TIME);
-			}
-			rover.addComponent(roverComponents.get(i));
-		}
-			
-					
-		((SerializedComponent)roverComponents.get(0).getComponents().get(0)).setResetTimer(DEFAULT_RESET_TIME);
-		((SerializedComponent)roverComponents.get(0).getComponents().get(0)).setReadTimer(DEFAULT_READ_TIME);
-		((SerializedComponent)roverComponents.get(1).getComponents().get(0)).setResetTimer(DEFAULT_RESET_TIME);
-		((SerializedComponent)roverComponents.get(1).getComponents().get(0)).setReadTimer(DEFAULT_READ_TIME);
-		((SerializedComponent)roverComponents.get(2).getComponents().get(0)).setResetTimer(DEFAULT_RESET_TIME);
-		((SerializedComponent)roverComponents.get(2).getComponents().get(0)).setReadTimer(DEFAULT_READ_TIME);
-		((SerializedComponent)roverComponents.get(3).getComponents().get(0)).setResetTimer(DEFAULT_RESET_TIME);
-		((SerializedComponent)roverComponents.get(3).getComponents().get(0)).setReadTimer(DEFAULT_READ_TIME);
-		((SerializedComponent)roverComponents.get(4).getComponents().get(0)).setResetTimer(DEFAULT_RESET_TIME);
-		((SerializedComponent)roverComponents.get(4).getComponents().get(0)).setReadTimer(DEFAULT_READ_TIME);
-		
-		
+		keys = new GUIKeyListener();//Add key listener to the GUI; only for first focus though; needs to also go to JTabbedPane (where focus is usually in)
+		rover = YURTRover.buildRoverModel();
 		panelAdded = new ArrayList<Boolean>();
 		for(int i = 0; i < 13; i++) panelAdded.add(false);// by default, no panel is added
 		this.addMouseListener(this);
+//----------------------            init Variables            -------------------------//
+		//tele2.addTelemetry(12, 11, speed1);
+		//tele2.addTelemetry(12, 14, speed1);
+		// TestThread t = new TestThread(time, degree, latency, tiltX,tiltY,power,speed,bucket, conveyer, armAngles, canfields, warningCond,statuses);
+		// t.start();
 //----------------------        add GUIComponents        -------------------------//
+		
+//		cameraPanel = new CameraTabbedPane(1, 0,0,width,height);
+//		layers.add(cameraPanel, JLayeredPane.DEFAULT_LAYER);
+//		cameraPanel.addKeyListener(keys);
+		
 		this.mode = mode;
 		this.initSettings();
+		guideLinesPanelTrans = trans;
+		guideLinesPanel = new GuideLinesPanel(0,0, width, height, 0);
+		threadController.addUpdateThreadFunction(guideLinesPanel.updateDisplayFunction);
+		layers.add(guideLinesPanel, JLayeredPane.PALETTE_LAYER, 5);
 		
 		this.setDefaultPanels();
 		if(mode == GUI_LUNABOTICS_MODE || mode == GUI_DEBUG_MODE) this.addLunaBoticsPanels();
 		if(((mode >= GUI_URC_MODE) && (mode <= GUI_URC_MODE+4)) || mode == GUI_DEBUG_MODE) this.addURCPanels();
-		if(compassPanel != null) compassTele.setCompassPanel(compassPanel);
-		if(tiltPanel != null) compassTele.setTiltPanel(tiltPanel);
+//		armPicPanel = new ArmPicPanel(0,height - RoverPicPanel.DEFAULT_HEIGHT - ArmPicPanel.DEFAULT_HEIGHT, armPicPanelTrans, armAngles, canfields);
+//		threadController.addUpdateThreadFunction(armPicPanel.updateArmFunction);
+//		layers.add(armPicPanel, JLayeredPane.PALETTE_LAYER, 1);
+
+//		try {
+//			warningPic1 = ImageIO.read(new File("/home/dennis/workspace/eclipse/OperatorGUI/src/GUI/highTemp.jpg"));
+//			Image image = warningPic1.getScaledInstance(warningPic1.getWidth(), warningPic1.getHeight(), 0);
+//			//Image image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/home/dennis/workspace/eclipse/OperatorGUI/src/GUI/highTemp.jpg"));
+//			warningPanel1 = new WarningSystem(0,100,image.getWidth(null),image.getHeight(null),warningPanel1Trans, warningCond,image);
+//			threadController.addUpdateThreadFunction(warningPanel1.updateWarnings);
+//			layers.add( warningPanel1, JLayeredPane.PALETTE_LAYER, 1);
+//		} catch (Exception ex) {System.out.println("img1 failed: "+ex.fillInStackTrace());}
+		
+		
+		threadController.startUpdate();// start repainting functions of GUIComponents
+		
 	}
 
 	/**
 	 * Initializes component repaints (threadController), UDP communications and rover syncing (client2).
 	 */
 	public void initSettings() {
+		threadController = new Threader();
 		//client2 = new UDPClient("192.168.80.111", 5005, 5005);//DEFAULT UDP TELEMETRY SETTINGS
 		//client2 = new UDPClient("localhost", 5000,5001);//DEFAULT UDP TELEMETRY SETTINGS
-		client2 = new UDPClient(ROVER_IP, 5000,5001);//DEFAULT UDP TELEMETRY SETTINGS
-		//client2 = new UDPClient("192.168.254.1", 3840,3840);//DEFAULT UDP TELEMETRY SETTINGS
+		client2 = new UDPClient("192.168.80.121", 3840,3840);//DEFAULT UDP TELEMETRY SETTINGS
 		tele2 = new ClientTelemetry(client2, rover);// control rover telemetry and UDP connections
-		client = new TCPClient(ROVER_IP, 30150);
+		client = new TCPClient("192.168.80.121", 30150);
 		trans = 0.8f;
 	}
 	/**
@@ -233,7 +178,6 @@ public class OperatorGUI extends JPanel implements MouseListener {
 		power = new double[]{0};
 		armAngles = new int[]{0,0,0};
 		canfields = new int[]{0,0,0};
-		signal = new String[]{""};
 		warningCond = new boolean[]{true};
 		data = tele2.buildNames();
 		statuses = tele2.buildStatus();
@@ -260,90 +204,81 @@ public class OperatorGUI extends JPanel implements MouseListener {
 		roverPicPanelTrans = trans;
 		armPicPanelTrans = trans;
 		pipPanelTrans = trans;
-		guideLinesPanelTrans = trans;
-		signalPanelTrans = trans;
 		
-		videoPanel = new VideoPanel(0,TabPanel.DEFAULT_HEIGHT,width, height, videoPanelTrans);
+		videoPanel = new VideoPanel(0,TabPanel.DEFAULT_HEIGHT,width, height, videoPanelTrans, "localhost", "4000");
+		threadController.addUpdateThreadFunction(videoPanel.videoUpdateFunction);
 		layers.add(videoPanel, JLayeredPane.DEFAULT_LAYER);
 		panelAdded.set(0, true);
 		
-		pipPanel = new VideoPanel(width-240-80,TabPanel.DEFAULT_HEIGHT,240+80, 240, 0f);
+		pipPanel = new VideoPanel(0,TabPanel.DEFAULT_HEIGHT,240+80, 240, 0f, "localhost", "5001");
+		threadController.addUpdateThreadFunction(pipPanel.videoUpdateFunction);
 		layers.add(pipPanel, JLayeredPane.PALETTE_LAYER, 0);
 		
 		tabPanel = new TabPanel(0,0,width, tabPanelTrans, videoPanel, client2, pipPanel, client);
 		tabPanel.addKeyListener(keys);
-		tabPanel.setDefaultIP(defaultIP);
-		tabPanel.setDefaultPort(defaultPort);
-		//tabPanel.makeOneCameraTab("abc","123");
-		//tabPanel.setPipPanel("abc", "1234");
+		//DEFAULT tab camera settings
+//		tabPanel.makeOneCameraTab();
+//		tabPanel.makeOneCameraTab();//tab 1
+//		CamSettingsPanel abc = ((CamSettingsPanel)tabPanel.getComponentAt(tabPanel.getTabCount()-1));
+//		abc.initPanels[0].inputs[0].setText("192.168.80.121");
+//		abc.initPanels[0].inputs[1].setText("4000");
 		
+//		videoPanel.addVideoTab(4);
+//		tabPanel.addTab("T4b "+(tabPanel.getTabCount()-1), tabPanel.addCameraTab(4));
+//		CamSettingsPanel temp = (CamSettingsPanel)tabPanel.getComponentAt(tabPanel.getTabCount()-1);
+//		temp.initPanels[0].inputs[0].setText("localhost"); //IP
+//		temp.initPanels[0].inputs[0].setText("9400"); //Port
+//		tabPanel.setSelectedIndex(tabPanel.getTabCount()-1);
+		//DEFAULT tab camera settings
 		layers.add(tabPanel, JLayeredPane.PALETTE_LAYER, 0);
 		panelAdded.set(1, true);
 		
-		timerPanel = new TimerPanel(width-TimerPanel.DEFAULT_WIDTH-SignalPanel.DEFAULT_WIDTH,height-TimerPanel.DEFAULT_HEIGHT, timerPanelTrans, time);
-		layers.add(timerPanel, JLayeredPane.PALETTE_LAYER, 1);
-		panelAdded.set(2, true);
+//		timerPanel = new TimerPanel(width-TimerPanel.DEFAULT_WIDTH-PowerBar.DEFAULT_BATTERY_WIDTH,height-TimerPanel.DEFAULT_HEIGHT, timerPanelTrans, time);
+//		threadController.addUpdateThreadFunction(timerPanel.updateTimer);
+//		layers.add(timerPanel, JLayeredPane.PALETTE_LAYER, 1);
+//		panelAdded.set(2, true);
+//		
+//		lagPanel = new LagMeter(width-LagMeter._width,height-LagMeter._height-PowerBar.DEFAULT_BATTERY_HEIGHT, lagPanelTrans, latency);
+//		lagPanel.setLMBounds(0, 100, 350, 500);
+//		threadController.addUpdateThreadFunction(lagPanel.muf);
+//		layers.add(lagPanel, JLayeredPane.PALETTE_LAYER, 1);
+//		panelAdded.set(3, true);
+//		
+//		powerPanel = new PowerBar(width-PowerBar.DEFAULT_BATTERY_WIDTH, height-PowerBar.DEFAULT_BATTERY_HEIGHT, powerPanelTrans, power);
+//		threadController.addUpdateThreadFunction(powerPanel.powerBarUpdateFunction);
+//		layers.add(powerPanel, JLayeredPane.PALETTE_LAYER, 1);
+//		panelAdded.set(4, true);
 		
 		tablePanel = new TablePanel(0,TabPanel.DEFAULT_HEIGHT,tablePanelTrans,data,statuses, voltage);
+		threadController.addUpdateThreadFunction(tablePanel.updater);
 		layers.add(tablePanel, JLayeredPane.PALETTE_LAYER, 1);
 		panelAdded.set(5, true);
-		
-		currentPanel = new TablePanel(0,TabPanel.DEFAULT_HEIGHT+100+30,currentPanelTrans,data,statuses, current);
-		currentPanel.setTransparency(0);
+		currentPanel = new TablePanel(0,TabPanel.DEFAULT_HEIGHT+100+20,currentPanelTrans,data,statuses, current);
+		threadController.addUpdateThreadFunction(currentPanel.updater);
 		layers.add(currentPanel, JLayeredPane.PALETTE_LAYER, 1);
 		panelAdded.set(6, true);
 		
-		speedPanel = new SpeedBar(width-SpeedBar.DEFAULT_WIDTH-TimerPanel.DEFAULT_WIDTH-SignalPanel.DEFAULT_WIDTH, height-SpeedBar.DEFAULT_HEIGHT, speedPanelTrans, speeds);
+//		tele2.addTelemetry(21,11, speeds.get(0));
+//		tele2.addTelemetry(21,21, speeds.get(1));
+//		tele2.addTelemetry(22,11, speeds.get(2));
+//		tele2.addTelemetry(22,21, speeds.get(3));
+		speedPanel = new Speed(width-Speed.DEFAULT_WIDTH-TimerPanel.DEFAULT_WIDTH-PowerBar.DEFAULT_BATTERY_WIDTH, height-Speed.DEFAULT_HEIGHT, speedPanelTrans, speeds);
+		threadController.addUpdateThreadFunction(speedPanel.uSpeed);
 		layers.add(speedPanel, JLayeredPane.PALETTE_LAYER, 1);
 		panelAdded.set(7, true);
 		
 		roverPicPanel = new RoverPicPanel(0, height-RoverPicPanel.DEFAULT_HEIGHT, roverPicPanelTrans, speeds);
+		threadController.addUpdateThreadFunction(roverPicPanel.updateSpeed);
 		layers.add(roverPicPanel, JLayeredPane.PALETTE_LAYER, 1);
 		panelAdded.set(8, true);
-		
-		guideLinesPanel = new GuideLinesPanel(0,0, width, height, 0);
-		layers.add(guideLinesPanel, JLayeredPane.PALETTE_LAYER, 5);
-		
-		signalPanel = new SignalPanel(width-SignalPanel.DEFAULT_WIDTH,height-SignalPanel.DEFAULT_HEIGHT,signalPanelTrans, signal);
-		layers.add(signalPanel, JLayeredPane.PALETTE_LAYER, 1);
-//-----------------------------         BIND TELEMETRY UPDATERS        ----------------------------------------//
-		//Speed telemetry
-		tele2.addTelemetry(22,21, speeds.get(0));
-		tele2.setTelemetryReadTime(22, 11, 1000);
-		tele2.addTelemetry(23,21, speeds.get(1));
-		tele2.setTelemetryReadTime(22, 21, 1000);
-		tele2.addTelemetry(22,11, speeds.get(2));
-		tele2.setTelemetryReadTime(23, 11, 1000);
-		tele2.addTelemetry(23,11, speeds.get(3));
-		tele2.setTelemetryReadTime(23, 21, 1000);
-		//Signal Strength Telemetry
-		tele2.addSignalTelemetry(signal);
-		tele2.setSignalComponent(signalPanel);
-		//Timer Telemetry
-		tele2.addTimeTelemetry(time);
-		tele2.setTimerComponent(timerPanel);
-		tele2.setOperatorGUI(this);
-		tele2.setTableComponent(tablePanel);
-		tele2.setTableTwoComponent(currentPanel);
-		//	try {
-		//	warningPic1 = ImageIO.read(new File("/home/dennis/workspace/eclipse/OperatorGUI/src/GUI/highTemp.jpg"));
-		//	Image image = warningPic1.getScaledInstance(warningPic1.getWidth(), warningPic1.getHeight(), 0);
-		//	//Image image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/home/dennis/workspace/eclipse/OperatorGUI/src/GUI/highTemp.jpg"));
-		//	warningPanel1 = new WarningSystem(0,100,image.getWidth(null),image.getHeight(null),warningPanel1Trans, warningCond,image);
-		//	threadController.addUpdateThreadFunction(warningPanel1.updateWarnings);
-		//	layers.add( warningPanel1, JLayeredPane.PALETTE_LAYER, 1);
-		//} catch (Exception ex) {System.out.println("img1 failed: "+ex.fillInStackTrace());}
-
 	}
-	/**
-	 * Lunabotics components: tilt only.
-	 */
 	public void addLunaBoticsPanels() {
 		if(tiltPanel == null) {
 			tiltPanelTrans = trans;
-			tiltPanel = new TiltSensor4(width-(int)TiltSensor4.MAX_WIDTH,tabPanel.height+200+(int)TiltSensor4.MAX_HEIGHT, tiltPanelTrans, 1,tiltX, tiltY);
+			tiltPanel = new TiltSensor4(width-(int)TiltSensor4.MAX_WIDTH, height-200-(int)TiltSensor4.MAX_HEIGHT, tiltPanelTrans, 1,tiltX, tiltY);
 		}
-		if(!panelAdded.get(9)) {	
+		if(!panelAdded.get(9)) {
+			threadController.addUpdateThreadFunction(tiltPanel.tiltMeterUpdateFunction);
 			layers.add(tiltPanel, JLayeredPane.PALETTE_LAYER, 1);
 			panelAdded.set(9, true);
 		}
@@ -359,9 +294,6 @@ public class OperatorGUI extends JPanel implements MouseListener {
 //			panelAdded.set(10, true);
 //		}
 	}
-	/**
-	 * URC panels: tilt and compass.
-	 */
 	public void addURCPanels() {
 		if(compassPanel == null) {
 //			degree = new long[]{0};
@@ -369,6 +301,7 @@ public class OperatorGUI extends JPanel implements MouseListener {
 			compassPanel = new Compass(width/2-Compass.DEFAULT_WIDTH/2,TabPanel.DEFAULT_HEIGHT, compassPanelTrans, degree);
 		}
 		if(!panelAdded.get(10)) {
+			threadController.addUpdateThreadFunction(compassPanel.updateCompass);
 			layers.add(compassPanel, JLayeredPane.PALETTE_LAYER, 1);
 			panelAdded.set(10, true);
 		}
@@ -376,174 +309,120 @@ public class OperatorGUI extends JPanel implements MouseListener {
 //			tiltX = new double[]{0};
 //			tiltY = new double[]{0};
 			tiltPanelTrans = trans;
-			tiltPanel = new TiltSensor4(width-(int)TiltSensor4.MAX_WIDTH, tabPanel.height+200+(int)TiltSensor4.MAX_HEIGHT, tiltPanelTrans, 1,tiltX, tiltY);
+			tiltPanel = new TiltSensor4(width-(int)TiltSensor4.MAX_WIDTH, height-200-(int)TiltSensor4.MAX_HEIGHT, tiltPanelTrans, 1,tiltX, tiltY);
 		}
 		if(!panelAdded.get(9)) {
+			threadController.addUpdateThreadFunction(tiltPanel.tiltMeterUpdateFunction);
 			layers.add(tiltPanel, JLayeredPane.PALETTE_LAYER, 1);
 			panelAdded.set(9, true);
 		}
 	}
 
-	public void moveLeft() {
-		if(tabPanel != null) {
-			//no idea why this works; appears to always be true
-			if(tabPanel.getSelectedIndex() >= 0 && tabPanel.getSelectedIndex() <= tabPanel.getTabCount())
-				tabPanel.setSelectedIndex(tabPanel.getSelectedIndex()-1);
-//				tabPanel.changeTab();
-		}
-	}
-	public void moveRight() {
-		if(tabPanel != null) {
-			//no idea why this works; appears to always be true
-			if(tabPanel.getSelectedIndex() >= 0 && tabPanel.getSelectedIndex() <= tabPanel.getTabCount()-2) {
-				tabPanel.setSelectedIndex(tabPanel.getSelectedIndex()+1);
-//				tabPanel.changeTab();
-			}
-		}
-	}
-	public void startVideo() {
-		if(tabPanel != null && videoPanel != null)
-			if(tabPanel.getSelectedIndex() >= 5 && tabPanel.getSelectedIndex() <= tabPanel.getComponentCount())
-				((CamSettingsPanel)tabPanel.curComponent).initPanels[0].playButton.doClick();
-	}
-	public void stopVideo() {
-		if(tabPanel != null && videoPanel != null)
-			if(tabPanel.getSelectedIndex() >= 5 && tabPanel.getSelectedIndex() <= tabPanel.getComponentCount())
-				((CamSettingsPanel)tabPanel.curComponent).initPanels[0].stopButton.doClick();
-	}
-	
-	/**
-	 * Reads keyboard presses for turning on/off the components.
-	 * Currently:
-	 * 1-0,q,[,],;: turn on off a component
-	 * z = start video (video 1 only)
-	 * x = stop video (videoo 1 only)
-	 * @author dennis
-	 *
-	 */
 	public class GUIKeyListener implements KeyListener {
+		public GUIKeyListener() {
+			//System.out.println("keyed!");
+		}
 		
 		@Override
-		public void keyTyped(KeyEvent e) { 
-			if(e.getKeyChar() == '`') {
-				tabPanel.flipDrop();
-			} else if(e.getKeyChar() == '1') {
-				if(tablePanel != null) {
-					if(tablePanel.getTransparency() == 0) tablePanel.setTransparency(tablePanelTrans);
-					else tablePanel.setTransparency(0f);
-					tablePanel.updateDisplay();
-				}
-				
-			} else if(e.getKeyChar() == '2') {
-				if(currentPanel != null) {
-					if(currentPanel.getTransparency() == 0) currentPanel.setTransparency(currentPanelTrans);
-					else currentPanel.setTransparency(0f);
-					currentPanel.updateDisplay();
-				}
-				
-			} else if(e.getKeyChar() == '3') {
-				if(compassPanel != null) {
-					if(compassPanel.getTransparency() == 0) compassPanel.setTransparency(compassPanelTrans);
-					else compassPanel.setTransparency(0f);
-					compassPanel.updateDisplay();
-				}
-				
-			} else if(e.getKeyChar() == '4') {
-				if(pipPanel != null) {
-					if(pipPanel.getTransparency() == 0) pipPanel.setTransparency(pipPanelTrans);
-					else pipPanel.setTransparency(0f);
-					pipPanel.updateDisplay();
-				}
-				
-			} else if(e.getKeyChar() == '5') {
-				if(tiltPanel != null) {
-					if(tiltPanel.getTransparency() == 0) tiltPanel.setTransparency(tiltPanelTrans);
-					else tiltPanel.setTransparency(0f);
-					tiltPanel.updateDisplay();
-				}
-				
-			} else if(e.getKeyChar() == '6') {
-				if(signalPanel != null) {
-					if(signalPanel.getTransparency() == 0) signalPanel.setTransparency(signalPanelTrans);
-					else signalPanel.setTransparency(0f);
-					signalPanel.updateDisplay();
-				}
-//				if(lagPanel != null) {
-//					if(lagPanel.getTransparency() == 0) lagPanel.setTransparency(lagPanelTrans);
-//					else lagPanel.setTransparency(0f);
-//					lagPanel.updateDisplay();
-//				}
-//				if(powerPanel != null) {
-//					if(powerPanel.getTransparency() == 0) powerPanel.setTransparency(powerPanelTrans);
-//					else powerPanel.setTransparency(0f);
-//					powerPanel.updateDisplay();
-//				}
-				
-			} else if(e.getKeyChar() == '7') {
-				if(timerPanel != null) {
-					if(timerPanel.getTransparency() == 0) timerPanel.setTransparency(timerPanelTrans);
-					else timerPanel.setTransparency(0f);
-					timerPanel.updateDisplay();
-				}
-				
-			} else if(e.getKeyChar() == '8') {
-				if(speedPanel != null) {
-					if(speedPanel.getTransparency() == 0) speedPanel.setTransparency(speedPanelTrans);
-					else speedPanel.setTransparency(0f);
-					speedPanel.updateDisplay();
-				}
-				
-			} else if(e.getKeyChar() == '9') {
-				if(roverPicPanel != null) {
-					if(roverPicPanel.getTransparency() == 0) roverPicPanel.setTransparency(roverPicPanelTrans);
-					else roverPicPanel.setTransparency(0f);
-					roverPicPanel.updateDisplay();
-				}
-				
-			} else if(e.getKeyChar() == '0') {
-				if(lunaPicPanel != null) {
-					if(lunaPicPanel.getTransparency() == 0) lunaPicPanel.setTransparency(lunaPicPanelTrans);
-					else lunaPicPanel.setTransparency(0f);
-					lunaPicPanel.updateDisplay();
-				}
-				
-			} else if(e.getKeyChar() == '.') {
-				if(videoPanel != null) {
-					if(videoPanel.getTransparency() == 0) videoPanel.setTransparency(videoPanelTrans);
-					else videoPanel.setTransparency(0f);
-					videoPanel.updateDisplay();
-				}
-				
-			} else if(e.getKeyChar() == '[') {
-				
-			} else if(e.getKeyChar() == ']') {
-				if(guideLinesPanel != null) {
-					if(guideLinesPanel.getTransparency() == 0) guideLinesPanel.setTransparency(guideLinesPanelTrans);
-					else guideLinesPanel.setTransparency(0f);
-					guideLinesPanel.updateDisplay();
-				}
-			} else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
-				self.moveLeft();
-			} else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
-				self.moveRight();
-			} else if(e.getKeyChar() == 'z') {
-				self.startVideo();
-			} else if(e.getKeyChar() == 'x') {
-				self.stopVideo();
-			}
-		}
+		public void keyTyped(KeyEvent e) { }
 
 		@Override
 		public void keyPressed(KeyEvent e) {
-			
+			if(e.getKeyChar() == '`') {
+				tabPanel.flipDrop();
+			} else if(e.getKeyChar() == '1') {
+				if(tablePanel != null)
+				if(tablePanel.getTransparency() == 0) tablePanel.setTransparency(tablePanelTrans);
+				else tablePanel.setTransparency(0f);
+				
+			} else if(e.getKeyChar() == 'q') {
+				if(currentPanel != null)
+				if(currentPanel.getTransparency() == 0) currentPanel.setTransparency(currentPanelTrans);
+				else currentPanel.setTransparency(0f);
+				
+			} else if(e.getKeyChar() == '2') {
+				if(compassPanel != null)
+				if(compassPanel.getTransparency() == 0) compassPanel.setTransparency(compassPanelTrans);
+				else compassPanel.setTransparency(0f);
+			} else if(e.getKeyChar() == '3') {
+				
+			} else if(e.getKeyChar() == '4') {
+				if(tiltPanel != null)
+				if(tiltPanel.getTransparency() == 0) tiltPanel.setTransparency(tiltPanelTrans);
+				else tiltPanel.setTransparency(0f);
+			} else if(e.getKeyChar() == '5') {
+				if(lagPanel != null)
+				if(lagPanel.getTransparency() == 0) lagPanel.setTransparency(lagPanelTrans);
+				else lagPanel.setTransparency(0f);
+			} else if(e.getKeyChar() == '6') {
+				if(powerPanel != null)
+				if(powerPanel.getTransparency() == 0) powerPanel.setTransparency(powerPanelTrans);
+				else powerPanel.setTransparency(0f);
+			} else if(e.getKeyChar() == '7') {
+				if(timerPanel != null)
+				if(timerPanel.getTransparency() == 0) timerPanel.setTransparency(timerPanelTrans);
+				else timerPanel.setTransparency(0f);
+			} else if(e.getKeyChar() == '8') {
+				if(speedPanel != null)
+				if(speedPanel.getTransparency() == 0) speedPanel.setTransparency(speedPanelTrans);
+				else speedPanel.setTransparency(0f);
+			} else if(e.getKeyChar() == '9') {
+				if(lunaPicPanel != null)
+				if(lunaPicPanel.getTransparency() == 0) lunaPicPanel.setTransparency(lunaPicPanelTrans);
+				else lunaPicPanel.setTransparency(0f);
+			} else if(e.getKeyChar() == '0') {
+				if(roverPicPanel != null)
+				if(roverPicPanel.getTransparency() == 0) roverPicPanel.setTransparency(roverPicPanelTrans);
+				else roverPicPanel.setTransparency(0f);
+			} else if(e.getKeyChar() == '.') {
+				if(videoPanel != null)
+				if(videoPanel.getTransparency() == 0) videoPanel.setTransparency(videoPanelTrans);
+				else videoPanel.setTransparency(0f);
+			} else if(e.getKeyChar() == '[') {
+				if(pipPanel != null)
+				if(pipPanel.getTransparency() == 0) pipPanel.setTransparency(pipPanelTrans);
+				else pipPanel.setTransparency(0f);
+				//guideLinesPanelTrans
+			} else if(e.getKeyChar() == ']') {
+				if(guideLinesPanel != null)
+				if(guideLinesPanel.getTransparency() == 0) guideLinesPanel.setTransparency(guideLinesPanelTrans);
+				else guideLinesPanel.setTransparency(0f);
+				//guideLinesPanelTrans
+			} else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
+				if(tabPanel != null) {
+					//no idea why this works; appears to always be true
+					if(tabPanel.getSelectedIndex() >= 6+1 && tabPanel.getSelectedIndex() <= tabPanel.getTabCount())
+						tabPanel.setSelectedIndex(tabPanel.getSelectedIndex());
+//						tabPanel.changeTab();
+				}
+			} else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
+				if(tabPanel != null) {
+					//no idea why this works; appears to always be true
+					if(tabPanel.getSelectedIndex() >= 6 && tabPanel.getSelectedIndex() <= tabPanel.getTabCount()-1) {
+						tabPanel.setSelectedIndex(tabPanel.getSelectedIndex());
+//						tabPanel.changeTab();
+					}
+				}
+			} 
+			else if(e.getKeyChar() == 'z') {
+//				JButton button = new JButton();
+//				button.doClick();
+				if(tabPanel != null && videoPanel != null)
+					if(tabPanel.getSelectedIndex() >= 5 && tabPanel.getSelectedIndex() <= tabPanel.getComponentCount())
+						((CamSettingsPanel)tabPanel.curComponent).initPanels[0].playButton.doClick();
+			}
+			else if(e.getKeyChar() == 'x') {
+//			JButton button = new JButton();
+//			button.doClick();
+			if(tabPanel != null && videoPanel != null)
+				if(tabPanel.getSelectedIndex() >= 5 && tabPanel.getSelectedIndex() <= tabPanel.getComponentCount())
+					((CamSettingsPanel)tabPanel.curComponent).initPanels[0].stopButton.doClick();
+		}
 		}//end
 
 		@Override
-		public void keyReleased(KeyEvent e) {
-			
-		}
-		
-	}//constructor
+		public void keyReleased(KeyEvent e) { }
+	}
 	
 	
 //-------------------------------------------                           TESTING AND MAIN                           -------------------------------------------//
@@ -555,11 +434,28 @@ public class OperatorGUI extends JPanel implements MouseListener {
 		
 		JFrame frame = new JFrame("Operator GUI");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			OperatorGUI gui = new OperatorGUI(width,height, OperatorGUI.GUI_DEBUG_MODE);
+			OperatorGUI gui = new OperatorGUI(width,height, OperatorGUI.GUI_LUNABOTICS_MODE);
 		frame.add(gui);
 		frame.setSize(width,height+40);
+		//frame.pack();
 		frame.addKeyListener(gui.keys);
 		frame.setVisible(true);
+		
+//		JFrame frameServer2 = new JFrame("UDP Client");
+//			UDPClientGUI udp2 = new UDPClientGUI(gui.client2);
+//		frameServer2.add(udp2);
+//		frameServer2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		frameServer2.pack();
+//		frameServer2.setVisible(true);
+		
+//		JFrame frameServer3 = new JFrame("UDP Rover");
+//		UDPClient client3 = new UDPClient("localhost", 4001, 4000);
+//		UDPClientGUI udp3 = new UDPClientGUI(client3);
+//		frameServer3.add(udp3);
+//			RoverTelemetry rover = new RoverTelemetry(client3);
+//		frameServer3.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		frameServer3.pack();
+//		frameServer3.setVisible(true);
 	}
 
 	@Override

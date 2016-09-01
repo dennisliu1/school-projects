@@ -1,6 +1,4 @@
-package gui.component;
-
-
+package GUI;
 
 
 import java.awt.Color;
@@ -34,6 +32,7 @@ public class PowerBar extends GUIComponent {
 	
 	private JPanel batteryLevelPanel;
 	private double[] power;
+	public PowerUpdate powerBarUpdateFunction;
 //---------------------------             CONSTRUCTORS             ---------------------------//
 	public PowerBar(int x,int y,float transparency,double[] power) {
 		this(x,y,DEFAULT_BATTERY_WIDTH,DEFAULT_BATTERY_HEIGHT,transparency,power);
@@ -41,6 +40,7 @@ public class PowerBar extends GUIComponent {
 	public PowerBar(int x, int y, int width, int height,float transparency, double[] power) {
 		super(x,y,width,height,transparency);
 		this.power = power;
+		initVars();
 	}
 	public PowerBar(int x,int y,float transparency) {
 		this(x,y,DEFAULT_BATTERY_WIDTH,DEFAULT_BATTERY_HEIGHT,transparency);
@@ -48,11 +48,19 @@ public class PowerBar extends GUIComponent {
 	public PowerBar(int x, int y, int width, int height,float transparency) {
 		super(x,y,width,height,transparency);
 		this.power = new double[1];
+		initVars();
+	}
+	private void initVars() {
+		powerBarUpdateFunction = new PowerUpdate(power);
 	}
 //---------------------------               FUNCTIONS               ---------------------------//
 	public void setTelemetry(double[] power) {
 		this.power = power;
 	}
+	public void updateDisplay() {
+		repaint();
+	}
+	
 	@Override
 	public void paintBuffer(Graphics g) {
 		//super.paint(g);
@@ -64,16 +72,32 @@ public class PowerBar extends GUIComponent {
 		g.drawRect(DEFAULT_BATTERY_MARGIN-1, DEFAULT_BATTERY_MARGIN-1, DEFAULT_BAR_WIDTH+1, DEFAULT_BAR_HEIGHT+1);
 		g.fillRect(DEFAULT_BATTERY_MARGIN+DEFAULT_BAR_WIDTH, this.getHeight()/2-DEFAULT_BATTERY_NUB_HEIGHT/2, 
 						DEFAULT_BATTERY_MARGIN, DEFAULT_BATTERY_NUB_HEIGHT);
-//		g.setColor(DEFAULT_BATTERY_COLOR);//draw battery power
-//		g.fillRect(DEFAULT_BATTERY_MARGIN, DEFAULT_BATTERY_MARGIN, 
-//						(int)(power[0]*(DEFAULT_BAR_WIDTH)), DEFAULT_BAR_HEIGHT);
 		g.setColor(DEFAULT_BATTERY_COLOR);//draw battery power
-		g.fillRect(DEFAULT_BATTERY_MARGIN, DEFAULT_BATTERY_MARGIN, DEFAULT_BAR_WIDTH, DEFAULT_BAR_HEIGHT);
+		g.fillRect(DEFAULT_BATTERY_MARGIN, DEFAULT_BATTERY_MARGIN, 
+						(int)(power[0]*(DEFAULT_BAR_WIDTH)), DEFAULT_BAR_HEIGHT);
 		g.setColor(DEFAULT_FONT_COLOR);
 		g.setFont(new Font("arial", Font.PLAIN, 20));
-		String s = Double.toString(power[0]);
-		if(s.length() > 6) s = s.substring(0, 6);
-		g.drawString(s, (DEFAULT_BAR_WIDTH/6)-DEFAULT_BATTERY_MARGIN, (DEFAULT_BAR_HEIGHT/2)+2*DEFAULT_BATTERY_MARGIN);
+		g.drawString(""+(int)(power[0]*100)+"%", (DEFAULT_BAR_WIDTH/5), (DEFAULT_BAR_HEIGHT/2)+2*DEFAULT_BATTERY_MARGIN);
+	}
+	
+	public class PowerUpdate extends UpdateFunction {
+		double oldPower;
+		double[] power;
+		public PowerUpdate(double[] power) {
+			this.power = power;
+			oldPower = power[0];
+		}
+		
+		@Override
+		public boolean checkValues() {
+			return power[0] != oldPower;
+		}
+
+		@Override
+		public void doUpdate() {
+			oldPower = power[0];
+			updateDisplay();
+		}
 	}
 //---------------------------               TESTING METHODS               ---------------------------//
 	public static void main(String[] args) {
@@ -85,7 +109,7 @@ public class PowerBar extends GUIComponent {
 		PowerBar p = new PowerBar(0, 0,1f, d);
 		f.getContentPane().add(p);
 		f.setVisible(true);
-		TestThread t = new TestThread(d,p);
+		TestThread t = new TestThread(d);
 		t.start();
 	}
 	
@@ -93,21 +117,19 @@ public class PowerBar extends GUIComponent {
 		boolean isRunning = true;
 		boolean pause = false;
 		double[] power;
-		PowerBar p;
 		
 		Random rand;
-		public TestThread(double[] power, PowerBar p) {
+		public TestThread(double[] power) {
 			this.power = power;
-			this.p = p;
 		}
 		@Override
 		public void run() {
 		while(isRunning) {
 			while(pause) { try{Thread.sleep(1); } catch(Exception e) {} }//lock thread
 			//DO CHANGE HERE
-			if(power[0] <= 11) power[0] = 13;
+			if(power[0] <= 0) power[0] = 1;
 			else power[0] -= 0.1;
-			p.updateDisplay();
+			
 			//System.out.println(input[0]);
 			try{Thread.sleep(1000); } catch(Exception e) {}//try changing wait time to update time differently
 		}}

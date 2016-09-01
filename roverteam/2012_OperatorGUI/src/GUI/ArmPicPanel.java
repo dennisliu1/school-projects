@@ -1,6 +1,4 @@
-package gui.testing;
-
-import gui.component.GUIComponent;
+package GUI;
 
 import java.awt.Color;
 import java.awt.Graphics;

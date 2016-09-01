@@ -1,6 +1,4 @@
-package gui.component;
-
-
+package GUI;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -30,6 +28,7 @@ public class TimerPanel extends GUIComponent {
 	//-------------------------------------		Variables			-------------------------------------//
 	/** variable to use to update the panel */			private long[] time;
 	/** Convertor of the format of the date to string */	private Date date;
+	public UpdateTimeFunction updateTimer;
 	private Font font = new Font("Arial", Font.PLAIN, 32);
 	//-------------------------------------		Constructor		-------------------------------------//
 	/**
@@ -43,10 +42,11 @@ public class TimerPanel extends GUIComponent {
 	 */
 	public TimerPanel(int x, int y, int width, int height, float transparency, long[] sharedTime) {
 		super(x,y,width,height,transparency);
-		//If time data is piped to panel, use it. Else, make a placeholder for now.
-		if(sharedTime == null) this.time = new long[1];
-		else this.time = sharedTime;
-		initVars();
+			//If time data is piped to panel, use it. Else, make a placeholder for now.
+			if(sharedTime == null) this.time = new long[1];
+			else this.time = sharedTime;
+			initVars();
+		
 	}
 	/**
 	 * Construct the Timer Panel with default size.
@@ -68,11 +68,12 @@ public class TimerPanel extends GUIComponent {
 	private void initVars() {
 		date= new Date();
 		updateDisplay();//default values for the display
+		//----------------		Panel Construction			---------------------//
+		this.setLayout(new FlowLayout());
+		this.setBackground(Color.green);
+		updateTimer = new UpdateTimeFunction(this.time);
 	}
 	//-------------------------------------		Functions		-------------------------------------//
-	public long[] getTelemetry() {
-		return time;
-	}
 	/**
 	 * set the time data. Simply points to the new data.
 	 */
@@ -80,31 +81,60 @@ public class TimerPanel extends GUIComponent {
 		this.time = sharedTime;
 	}
 	public void paintBuffer(Graphics g) {
-		String s2[] = new String[3];
-		long timer = time[0];
-		timer /= 1000;
-		s2[0] = ""+(timer/(60*60));
-		timer -= (timer/(60*60));
-		s2[1] = ""+(timer/(60));
-		timer -= (timer/60)*60;
-		s2[2] = ""+timer;
-		String s = s2[0]+":"+s2[1]+":"+s2[2];
+		String s = (int)(time[0]/3600)+":"+(int)((time[0]%3600)/60)+":"+time[0]%60;
 		g.setFont(font);
 		g.drawChars(s.toCharArray(), 0, s.length(), 5, font.getSize());
 		g.drawRect(0, 0, width-1, height-1);
 	}
+	/**
+	 * Update Panel's display with new time.
+	 * @param newTime 
+	 */
+	public void updateDisplay() {
+		this.repaint();
+	}
+	//-------------------------------------		Threading			-------------------------------------//
+	/**
+	 * Function to run in the update thread. Note several things:
+	 * - the monitored variable is passed by reference, and the previous time is
+	 * kept.
+	 * - checkValues() works when the values do not match; you should have something
+	 * like this as well.
+	 * - doUpdate() is where you update the display (updateDisplay should run here)
+	 */
+	public class UpdateTimeFunction extends UpdateFunction {
+		private long[] input;
+		private long oldTime;
+
+		public UpdateTimeFunction(long[] input) {
+			this.input = input;
+			this.oldTime = this.input[0];//default current time display
+		}
+
+		@Override
+		public boolean checkValues() {
+			return (oldTime != input[0]);
+			//return true;
+		}
+
+		@Override
+		public void doUpdate() {
+			oldTime = input[0];//update old time
+			updateDisplay();//update timer display
+		}
+	}
 	//-------------------------------------		Testing			-------------------------------------//
 	public static void main(String[]a) {
 		long[] time = new long[1];//create the shared variable to work with
+		TestThread t = new TestThread(time);//thread that updates the variable
+		t.start();
 		
 		//display panel on screen
 		JFrame frame = new JFrame("Testing Timer Panel");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(null);
-			TimerPanel panel = new TimerPanel(0,0, 1f,time);
-			frame.add(panel);
-			TestThread t = new TestThread(time,panel);//thread that updates the variable
-			t.start();
+                TimerPanel panel = new TimerPanel(0,0, 1f,time);
+                frame.add(panel);
 		frame.setSize(200,100);
 		//frame.pack();
 		frame.setVisible(true);//this should always be last method to run.
@@ -113,17 +143,14 @@ public class TimerPanel extends GUIComponent {
 	 * updates the variable with the current time. Try changing the long and watch the 
 	 * label display something different! =)
 	 */
-	public static class TestThread extends Thread {
+	private static class TestThread extends Thread {
 		boolean isRunning = true;
 		boolean pause = false;
 		long[] input;
 		Random rand;
-		TimerPanel panel;
-		
-		public TestThread(long[] input,TimerPanel panel) {
+		public TestThread(long[] input) {
 			this.input = input;
-			input[0] = 3600000;
-			this.panel = panel;
+			input[0] = 3610;
 		}
 		@Override
 		public void run() {
@@ -131,8 +158,7 @@ public class TimerPanel extends GUIComponent {
 			while(pause) { try{Thread.sleep(1); } catch(Exception e) {} }//lock thread
 			//DO CHANGE HERE
 			System.out.println(input[0]);
-			input[0]-= 1000;
-			panel.updateDisplay();
+			input[0]-= 1;
 			try{Thread.sleep(1000); } catch(Exception e) {}//try changing wait time to update time differently
 		}}
 	}//UpdateThread class

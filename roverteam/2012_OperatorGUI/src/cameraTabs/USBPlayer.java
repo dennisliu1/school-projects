@@ -278,7 +278,7 @@ public class USBPlayer {
 					readSocket(in, length, jpg_buf);
 
 					// Save an image for outside use.
-					if(saveImage) {
+					if(saveImage){
 						System.arraycopy(jpg_buf, 0, saved_image, 0, length);
 						saveImage = false;
 					}

@@ -1,5 +1,0 @@
- * Test
- * sudo gst-launch rtspsrc latency=0 location=rtsp://192.168.80.100:9400/stream ! decodebin ! xvimagesink sync=false
- * 
- * Glen
- * sudo gst-launch rtspsrc latency=0 location=rtsp://192.168.80.100:9400/stream ! decodebin ! xvimagesink sync=false

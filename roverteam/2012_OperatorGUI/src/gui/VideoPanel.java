@@ -1,13 +1,10 @@
-package gui;
+package GUI;
 
+import GUI.TabPanel.CameraInitsPanel;
 import cameraTabs.CameraInitPanel2;
 import cameraTabs.USBPlayer;
 import cameraTabs.USBVideoPlayer;
 import cameraTabs.RTSPPlayer;
-
-import gui.TabPanel.CameraInitsPanel;
-import gui.component.GUIComponent;
-import gui.testing.UpdateFunction;
 
 import java.awt.BorderLayout;
 import java.awt.Canvas;
@@ -29,7 +26,7 @@ import org.gstreamer.State;
 import org.gstreamer.swing.VideoComponent;
 
 /**
- * 
+ *
  * @author dennis
  */
 public class VideoPanel extends GUIComponent {
@@ -39,28 +36,41 @@ public class VideoPanel extends GUIComponent {
 	private ArrayList<ArrayList<USBVideoPlayer>> usbPlayers;
 	private ArrayList<ArrayList<VideoComponent>> cam;
 	//public CameraInitPanel2 camInitPanels;
+	private String ip;
+	private String port;
 	private int width, height;
+	public UpdateVideoFunction videoUpdateFunction;
 	public boolean useUSB;
 	
 	private int tabCounter;
 	private int tabVideoCounter;
 	
-	//USB Player frame parameters
 	ArrayList<ArrayList<Image>> img;
 	ArrayList<ArrayList<Integer>> i;
 	ArrayList<ArrayList<Integer>> i0;
 	ArrayList<ArrayList<Integer>> videoWidth;
 	ArrayList<ArrayList<Integer>> videoHeight;
+	Object object;
 	
 	public int videoNum;//get which tab currently on(for IP cameras)
 	public int numTab; //current tab video is on
-	
 //---------------------------             CONSTRUCTORS             ---------------------------//
 	public VideoPanel(int x, int y, int width, int height, float transparency) {
 		super(x,y,width,height, transparency);
+	}
+	public VideoPanel(int x, int y, int width, int height, float transparency, String ip, String port) {
+		super(x,y,width,height, transparency);
+		this.ip = ip;
+		this.port = port;
 		this.width = width;
 		this.height = height;
+		//this.setBackground(Color.black);
 		
+//		cam = new Canvas();
+//		cam.setPreferredSize(new Dimension(width, height));
+//		cam.setBounds(x, y, width, height);
+		
+		//camInitPanels = new CameraInitPanel2(ip, port);
 		vPlayers = new ArrayList();
 		usbPlayers = new ArrayList();
 		cam = new ArrayList<ArrayList<VideoComponent>>();
@@ -96,6 +106,7 @@ public class VideoPanel extends GUIComponent {
 //		usbPlayers.add(new ArrayList<USBVideoPlayer>());
 //		cam.add(new ArrayList<VideoComponent>());
 		//cam.get(0).add(new Canvas());
+		videoUpdateFunction = new UpdateVideoFunction();
 		tabCounter = 0;
 		
 	}
@@ -109,12 +120,11 @@ public class VideoPanel extends GUIComponent {
 			for(int i = 0; i < cam.get(tabNum).size(); i++) {//add current tab canvas
 				if(cam.get(tabNum).get(i) != null) {
 					this.add(cam.get(tabNum).get(i));
-					System.out.println("Set RTSP video "+i);
 					//System.out.printf("added camera:%d %d %d %d",x1,y1, width1, height1);
 				}
 			}
 			videoNum = tabNum;
-//			System.out.println("Set RTSP video "+tabNum);
+			System.out.println("Set RTSP video "+tabNum);
 		}
 	}
 	public void unbindNumTab(int tabNum) {
@@ -162,12 +172,18 @@ public class VideoPanel extends GUIComponent {
 	public void paintBuffer(Graphics g) {
 		super.paintComponent(g);
 		if( !this.useUSB ) {
+//			for(int i = 0; i < cam.get(videoNum).size();i++) {
+//				if(cam.get(videoNum).get(i) != null) {
+//					this.paintComponent(cam.get(videoNum).get(i).getGraphics());
+//					System.out.println("Paint RTSP");
+//				}
+//			}
 			super.paintChildren(g);
-		} else {
-			for(int x = 0; x < img.get(numTab).size(); x++) {
-				if(img.get(numTab).get(x) != null)
-				g.drawImage(img.get(numTab).get(x), i.get(numTab).get(x), i0.get(numTab).get(x), videoWidth.get(numTab).get(x), videoHeight.get(numTab).get(x), null);
-			}
+		} else if( this.useUSB ) {
+				for(int x = 0; x < img.get(numTab).size(); x++) {
+					if(img.get(numTab).get(x) != null)
+					g.drawImage(img.get(numTab).get(x), i.get(numTab).get(x), i0.get(numTab).get(x), videoWidth.get(numTab).get(x), videoHeight.get(numTab).get(x), null);
+				}
 		}
 		//g.dispose();
 	}
@@ -181,12 +197,28 @@ public class VideoPanel extends GUIComponent {
 				vPlayers.get(tabNum).get(x).setStop();
 		}
 	}
+//	public void clearScreens() {
+//		for(int iter = 0; iter < img.length; iter++) {
+//			img[iter] = null;
+//			i[iter] = 0;
+//			i0[iter] = 0;
+//			videoWidth[iter] = 0;
+//			videoHeight[iter] = 0;
+//			object[iter] = null;
+//		}
+//	}
 
 	public void getFrame(Image img, int i, int i0, int videoWidth, int videoHeight, int tabNum, int videoNum) {
 		int iter = 0;
 		if(i == width/2) iter++;
 		if(i0 == height/2) iter += 2;
 		
+//		this.img[iter] = img;
+//		this.i[iter] = i;
+//		this.i0[iter] = i0;
+//		this.videoWidth[iter] = videoWidth;
+//		this.videoHeight[iter] = videoHeight;
+//		this.object[iter] = object;
 		this.img.get(tabNum).set(videoNum, img);
 		this.i.get(tabNum).set(videoNum, i);
 		this.i0.get(tabNum).set(videoNum, i0);
@@ -230,11 +262,10 @@ public class VideoPanel extends GUIComponent {
 					try {
 						//vPlayers.get(tabNum).add(numVideo, new RTSPPlayer(new String[]{}, "rtsp://127.0.0.1:8554/test"));
 						vPlayers.get(tabNum).add(numVideo, new RTSPPlayer(initPanel.inputs[1].getText().split(" "), initPanel.inputs[0].getText()));
+						//cam.get(tabNum).set(numVideo, vPlayers.get(tabNum).get(numVideo).getVideoComponent());
 						vPlayers.get(tabNum).get(numVideo).videoComponent = new VideoComponent();
 						cam.get(tabNum).set(numVideo, vPlayers.get(tabNum).get(numVideo).videoComponent);
-//						vPlayers.get(tabNum).get(numVideo).playbin.setVideoSink(vPlayers.get(tabNum).get(numVideo).videoComponent.getElement());
-//						vPlayers.get(tabNum).get(numVideo).startMain();
-						vPlayers.get(tabNum).get(numVideo).setVideoSink();
+						vPlayers.get(tabNum).get(numVideo).playbin.setVideoSink(vPlayers.get(tabNum).get(numVideo).videoComponent.getElement());
 						
 						int x1 = (numVideo%2)*(width/2);//either 0 or width/2 (go right?)
 						int y1 = (numVideo/2)*(height/2);//either 0 or height/2 (go down?)
@@ -243,29 +274,28 @@ public class VideoPanel extends GUIComponent {
 						int height1 = height;
 							if(cam.get(tabNum).size() > 1) height1 /= 2;
 						
-//						cam.get(tabNum).get(numVideo).setPreferredSize(new Dimension(width1, height1));
-//						cam.get(tabNum).get(numVideo).setBounds(x1,y1, width1, height1);
-//						cam.get(tabNum).get(numVideo).setSize(width1, height1);
-						vPlayers.get(tabNum).get(numVideo).videoComponent.setPreferredSize(new Dimension(width1, height1));
-						vPlayers.get(tabNum).get(numVideo).videoComponent.setBounds(x1,y1, width1, height1);
-						vPlayers.get(tabNum).get(numVideo).videoComponent.setSize(width1, height1);
-						//cam.get(tabNum).get(numVideo).setOpaque(false);
-						System.out.printf("Made vPlayer:%d %d %d %d\n", x1,y1, width1,height1);
+						cam.get(tabNum).get(numVideo).setPreferredSize(new Dimension(width1, height1));
+						cam.get(tabNum).get(numVideo).setBounds(x1,y1, width1, height1);
+						cam.get(tabNum).get(numVideo).setSize(width1, height1);
+						cam.get(tabNum).get(numVideo).setOpaque(false);
+						System.out.printf("Made vPlayer:%d %d\n", tabNum, numVideo);
 					} catch (URISyntaxException e) {e.printStackTrace(); }
 				}
 				self.unbindNumTab(tabNum);
 				self.setTabCanvas(tabNum);
-//				JFrame frame = new JFrame("VideoPlayer");
-//				frame.add(vPlayers.get(tabNum).get(numVideo).videoComponent);
-//				frame.setPreferredSize(new Dimension(640, 480));
-//				frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-//				frame.pack();
-//				frame.setVisible(true);
-				vPlayers.get(tabNum).get(numVideo).playbin.setState(State.PLAYING);
-//		    RefreshThread th = new RefreshThread();
-//		    th.start();
-//		    vPlayers.get(tabNum).get(numVideo).startMain();
-				System.out.println("Make RTSP");	
+				//vPlayers.get(tabNum).get(numVideo).videoComponent = cam.get(tabNum).get(numVideo);
+//					JFrame frame = new JFrame("VideoPlayer");
+//			    frame.getContentPane().add(vPlayers.get(tabNum).get(numVideo).videoComponent, BorderLayout.CENTER);
+//			    frame.setPreferredSize(new Dimension(640, 480));
+//			    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+//			    frame.pack();
+//			    frame.setVisible(true);
+		    vPlayers.get(tabNum).get(numVideo).playbin.setState(State.PLAYING);
+				//vPlayers.get(tabNum).get(numVideo).startMain();
+				//vPlayers.get(tabNum).get(numVideo).setVideoSink();
+				//vPlayers.get(tabNum).get(numVideo).setPlay();
+		    System.out.println("Make RTSP");
+//				self.setTabCanvas(tabNum);
 			} else {//USB
 				if(usbPlayers.get(tabNum).get(numVideo) == null) {
 					int x1 = (numVideo%2)*(width/2);//either 0 or width/2 (go right?)
@@ -294,35 +324,23 @@ public class VideoPanel extends GUIComponent {
 				if(vPlayers.get(tabNum).get(numVideo) != null)
 					self.remove(vPlayers.get(tabNum).get(numVideo).getVideoComponent());
 					vPlayers.get(tabNum).get(numVideo).setStop();
-//					vPlayers.get(tabNum).set(numVideo,null);
+					vPlayers.get(tabNum).set(numVideo,null);
 			} else {//USB
 				if(usbPlayers.get(tabNum).get(numVideo) != null) { 
 					usbPlayers.get(tabNum).get(numVideo).closeConnection();
 				}
 			}
 		}//closeVideo
-		
-		
-		
-		
-		
-		
-//		public class RefreshThread extends Thread {
-//			@Override
-//			public void run() {
-//				while(vPlayers.get(tabNum).get(numVideo).getState().equals(org.gstreamer.State.PLAYING)) {
-//					self.updateDisplay();
-////					System.out.println("draw");
-//					try { Thread.sleep(1); } catch(Exception e) {}
-//				}
-//			}
-//		}
 	}//VideoActionListener class
-
-	public int getNumTab() {
-		return numTab;
+	
+	public class UpdateVideoFunction extends UpdateFunction {
+		@Override
+		public boolean checkValues() { return true; }
+		@Override
+		public void doUpdate() { self.repaint(); }
 	}
+
 	public void setNumTab(int selectedIndex) {
 		numTab = selectedIndex;
 	}
-}//VideoPanel class
+}

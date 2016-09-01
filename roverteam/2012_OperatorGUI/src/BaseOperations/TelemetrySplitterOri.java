@@ -3,10 +3,6 @@ package BaseOperations;
 import Comm.ParamFunction;
 import Comm.Test.UDPClientGUI;
 import Comm.UDP.UDPClient;
-
-import java.awt.FlowLayout;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -14,7 +10,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 
-import zRovermodel.ClientTelemetry;
 import zRovermodel.SerializedComponent;
 import zRovermodel.RoverTelemetry;
 import zRovermodel.YURTRover;
@@ -34,12 +29,9 @@ import zRovermodel.YURTRover;
  * w.DID.FID.VAL
  * - This is a write request. No affirmation yet, to be decided.
  * 
- * connect to basestation with wire, set udp to its ip: 192.168.80.20 port 5000,5000
- * basestation should run telemetrysplitter, and set its own ip 192.168.80.20 port 5000,5000 for the split part.
- * 
  * @author dennis
  */
-public class TelemetrySplitter {
+public class TelemetrySplitterOri {
 	public static final int DEFAULT_RESET_TIME = 3000;
 	public static final int DEFAULT_READ_TIME = 1000;
 	private UDPClient client;
@@ -50,17 +42,11 @@ public class TelemetrySplitter {
 	private ArrayList<ArrayList<double[]>> telemetry;
 	private long time[];
 	
-	private UDPClient receiver;
-	private SplitterParamFunction splitFunct;
-	
-	public TelemetrySplitter(UDPClient client, YURTRover rover, UDPClient receiver) {
+	public TelemetrySplitterOri(UDPClient client, YURTRover rover) {
 		this.client = client;
 		this.rover = rover;
-		this.receiver = receiver;
 		receiveFunct = new ReceiveParamFunction();
 		client.addReceiveFunct(receiveFunct);
-		splitFunct = new SplitterParamFunction();
-		receiver.addReceiveFunct(splitFunct);
 		telemetry = new ArrayList<ArrayList<double[]>>();//build telemetry list
 		for(int i = 0; i < rover.getComponents().size(); i++) {
 			telemetry.add(new ArrayList<double[]>());
@@ -143,9 +129,7 @@ public class TelemetrySplitter {
 			sORI = s.substring(0);
 			s = s.concat(".");
 			//split apprently does not work, so wrote it manually.
-			s2[0] = s.substring(0,1);
-			s = s.substring(1);
-			for(int i = 1; i < 4; i++) {
+			for(int i = 0; i < 4; i++) {
 				if(s.indexOf('.') != -1) {
 					s2[i] = s.substring(0, s.indexOf('.'));
 					s = s.substring(s.indexOf('.')+1);
@@ -160,20 +144,35 @@ public class TelemetrySplitter {
 					int device = -1, field = -1;
 					device = rover.getDeviceID(Integer.parseInt(s2[1]));
 					field = rover.getFieldID(device, Integer.parseInt(s2[2]));
-					//System.out.printf("splitter got %s\n", sORI);
-					if(s2[3] != null)
+					System.out.printf("splitter got %s\n", sORI);
 					if(field >= 0 && s2[3].length() > 0) {
 						rover.getComponents().get(device).getComponents().get(field).setData(s2[3]);
-						System.out.printf("splitter got %s\n", rover.getComponents().get(device).getComponents().get(field).getData());
 						((SerializedComponent)rover.getComponents().get(device).getComponents().get(field)).setTime(System.currentTimeMillis());
 						if(telemetry.size() >= device) {
 							if(telemetry.get(device).size() >= field) {
 								if(telemetry.get(device).get(field) != null) {
-									//System.out.printf("splitter updates %s %s: %s\n", s2[1],s2[2],s2[3]);
+									System.out.printf("splitter updates %s %s: %s\n", s2[1],s2[2],s2[3]);
 									telemetry.get(device).get(field)[0] = Double.parseDouble(rover.getComponents().get(device).getComponents().get(field).getData());
 								}
 							}
 						}
+//						System.out.printf("Client get %s:r.%s.%s.%s:\n", sORI,
+//							rover.getComponents().get(device).getIdentifier(),
+//							rover.getComponents().get(device).getComponents().get(field).getIdentifier(),
+//							rover.getComponents().get(device).getComponents().get(field).getData());
+						// if(s2[1].equals("12") && s2[2].equals("11")) {
+						// 	double num = Integer.parseInt(rover.getComponents().get(device).getComponents().get(field).getData());
+						// 	System.out.printf("Speed1: %f\n", num);
+						// } else if(s2[1].equals("12") && s2[2].equals("21")) {
+						// 	double num = Integer.parseInt(rover.getComponents().get(device).getComponents().get(field).getData());
+						// 	System.out.printf("Speed2: %f\n", num);
+						// } else if(s2[1].equals("12") && s2[2].equals("14")) {
+						// 	double voltage = Integer.parseInt(rover.getComponents().get(device).getComponents().get(field).getData())/1023.0 * 5.0 *(2.7+10)/2.7;
+						// 	System.out.printf("voltage: %f\n", voltage);
+						// } else if(s2[1].equals("12") && s2[2].equals("15")) {
+						// 	double voltage = Integer.parseInt(rover.getComponents().get(device).getComponents().get(field).getData())/1023.0 * 5.0 *(2.7+10)/2.7;
+						// 	System.out.printf("current: %f\n", voltage);
+						// }
 					}//field >= 0
 				}//read section
 			}//if format matches
@@ -205,14 +204,10 @@ public class TelemetrySplitter {
 						for(int i = 0; i < rover.getComponents().size(); i++) {
 							for(int j = 0; j < rover.getComponents().get(i).getComponents().size(); j++) {
 								if(((SerializedComponent)rover.getComponents().get(i).getComponents().get(j)).isPastReadTime(c)) {
-									if(client.sendPacket("r"+rover.getComponents().get(i).getIdentifier()+"."+rover.getComponents().get(i).getComponents().get(j).getIdentifier())) {
+									if(client.sendPacket("r."+rover.getComponents().get(i).getIdentifier()+"."+rover.getComponents().get(i).getComponents().get(j).getIdentifier())) {
 										setTelemetryData(i,j);
 										//System.out.printf("GUI Sends %s\n", "r."+rover.getComponents().get(i).getIdentifier()+"."+rover.getComponents().get(i).getComponents().get(j).getIdentifier());
 									}
-//									if(client.sendPacket("w"+rover.getComponents().get(i).getIdentifier()+".11.31")) {
-//										setTelemetryData(i,j);
-//										//System.out.printf("GUI Sends %s\n", "r."+rover.getComponents().get(i).getIdentifier()+"."+rover.getComponents().get(i).getComponents().get(j).getIdentifier());
-//									}
 								}
 						}}
 					}//check every second
@@ -264,123 +259,28 @@ public class TelemetrySplitter {
 			}
 		}
 	}//setTelemetryData method
-
-	public class SplitterParamFunction implements ParamFunction {
-		String s,sORI;
-		String[] s2 = new String[4];
-		
-		@Override
-		public void execute() {
-			//I know I call the UDPClient's paramfunction, which sets receiveString and receiveAddress. So I can use them.
-			InetAddress addr = receiver.getReceiveAddress();
-			int port = receiver.getReceivePort();
-			
-			s = receiver.getReceiveString();
-			sORI = s.substring(0);
-			s = s.concat(".");
-			//System.out.printf("Test Send:%s \n", sORI);
-			//split apprently does not work, so wrote it manually.
-			for(int i = 0; i < s2.length; i++)
-				s2[i] = "";
-			for(int i = 0; i < 4; i++) {
-				if(s.indexOf('.') != -1) {
-					s2[i] = s.substring(0, s.indexOf('.'));
-					s = s.substring(s.indexOf('.')+1);
-				} else break;
-			}
-			//PROCESS THE RECEIVED STRING HERE
-			if(s2[0] != null) {
-				if(s2[0].startsWith("time:")) {
-					if(time != null) receiver.sendPacket("time:"+time[0], addr.getHostAddress(), port);
-				}
-				
-				if(s2[0].equals("r")) {
-					int device = -1, field = -1;
-					device = rover.getDeviceID(Integer.parseInt(s2[1]));
-					field = rover.getFieldID(device, Integer.parseInt(s2[2]));
-					if(field >= 0) {
-						if(rover.getComponents().size() >= device) {
-							if(rover.getComponents().get(device).getComponents().size() >= field) {
-								String sendStr = "r."+rover.getComponents().get(device).getIdentifier()+"."+rover.getComponents().get(device).getComponents().get(field).getIdentifier()+"."+rover.getComponents().get(device).getComponents().get(field).getData();
-								try {
-									if(addr.equals(InetAddress.getByName("localhost"))) receiver.sendPacket(sendStr, addr, port-1);
-									else receiver.sendPacket(sendStr, addr, port);
-								} catch (UnknownHostException e) { }
-								System.out.printf("Test Send:%s %s %d\n", "r."+rover.getComponents().get(device).getIdentifier()+"."+rover.getComponents().get(device).getComponents().get(field).getIdentifier()+"."+rover.getComponents().get(device).getComponents().get(field).getData(), addr.getHostAddress(), port);
-							}
-						}
-					}//field >= 0
-				}//read section
-				for(int i = 0; i < s2.length; i++)
-					s2[i] = "";
-			}//if format matches
-		}//execute()
-	}//ReceiveParamFunction class	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	public static void main(String[] a) {
-		JFrame frameServer2 = new JFrame("UDP Splitter");
-		frameServer2.setLayout(new FlowLayout());
-			UDPClient client2 = new UDPClient("localhost", 4000, 4001);
+		JFrame frameServer2 = new JFrame("UDP Client");
+			UDPClient client2 = new UDPClient("localhost", 4000, 4000);
 			UDPClientGUI udp2 = new UDPClientGUI(client2);
 			frameServer2.add(udp2);
-			UDPClient receiver = new UDPClient("localhost", 5001, 5000);
-			UDPClientGUI rGUI = new UDPClientGUI(receiver);
-			frameServer2.add(rGUI);
 			YURTRover r = YURTRover.buildRoverModel();
-			TelemetrySplitter tele2 = new TelemetrySplitter(client2, r, receiver);
-//			tele2.buildNames();
-//			tele2.buildStatus();
-//			tele2.buildVoltages();
+			TelemetrySplitterOri tele2 = new TelemetrySplitterOri(client2, r);
 			tele2.addTelemetry(21, 12, new double[1]);
-			//tele2.addTelemetry(21, 0, new double[1]);
 			//ArrayList<double[]> arr = tele2.buildStatus();
 		frameServer2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frameServer2.pack();
 		frameServer2.setVisible(true);
 		
 		JFrame frameServer3 = new JFrame("UDP Rover");
-			UDPClient client3 = new UDPClient("localhost", 4001, 4000);
+			UDPClient client3 = new UDPClient("localhost", 4000, 4000);
 			UDPClientGUI udp3 = new UDPClientGUI(client3);
 			frameServer3.add(udp3);
 			RoverTelemetry rover = new RoverTelemetry(client3);
 		frameServer3.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frameServer3.pack();
 		frameServer3.setVisible(true);
-		
-		JFrame frameServer = new JFrame("UDP GUI");
-			UDPClient client = new UDPClient("localhost", 5000, 5001);
-			UDPClientGUI udp = new UDPClientGUI(client);
-			frameServer.add(udp);
-			YURTRover r2 = YURTRover.buildRoverModel();
-			ClientTelemetry tele = new ClientTelemetry(client, r2);
-			tele.addTelemetry(21, 12, new double[1]);
-		frameServer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frameServer.pack();
-		frameServer.setVisible(true);
 	}
 }//ClientTelemetry class
 

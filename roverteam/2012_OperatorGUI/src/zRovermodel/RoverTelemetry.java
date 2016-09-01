@@ -4,15 +4,14 @@
  */
 package zRovermodel;
 
+import Comm.ParamFunction;
+import Comm.Test.UDPClientGUI;
+import Comm.UDP.UDPClient;
 import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
-
-import comm.ParamFunction;
-import comm.Test.UDPClientGUI;
-import comm.UDP.UDPClient;
 
 /**
  * THIS IS A TEST CLASS FOR ClientTelemetry ONLY. It also programs the example

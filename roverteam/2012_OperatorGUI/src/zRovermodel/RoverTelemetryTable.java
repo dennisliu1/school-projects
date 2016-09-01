@@ -7,9 +7,8 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
-import comm.Test.UDPClientGUI;
-import comm.UDP.UDPClient;
-
+import Comm.Test.UDPClientGUI;
+import Comm.UDP.UDPClient;
 
 import zRovermodel.Robot._dataType;
 

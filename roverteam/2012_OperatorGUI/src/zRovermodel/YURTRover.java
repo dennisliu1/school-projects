@@ -146,13 +146,10 @@ public class YURTRover extends SerializedComponent
 		return comp;
 	}
 	
-	public static YURTRover defaultRoverModel() {
-		YURTRover rover = new YURTRover("Rover", 0, Component._dataType._int, "0");
-		return rover;
-	}
+	
 	public static YURTRover buildRoverModel() {
 		YURTRover rover = new YURTRover("Rover", 0, Component._dataType._int, "0");
-			Component FrontComp = new YURTRover("Front21", 21, Component._dataType._int, "21");
+			Component FrontComp = new YURTRover("Front21", 12, Component._dataType._int, "21");
 			//FL
 			FrontComp.addComponent(new YURTRover("Client ID", 0, Component._dataType._int, "-1", Robot.READ_ONLY));// Device ID
 			FrontComp.addComponent(new YURTRover("Power", 11, Component._dataType._int, "0", Robot.READ_WRITE, -128d, 127d));// [-128,127]
@@ -227,24 +224,7 @@ public class YURTRover extends SerializedComponent
 		DumpBucketExcavator.addComponent(new YURTRover("Load Current", 26, Component._dataType._int, "", Robot.READ_ONLY, 0, 1023));// [0, 1023]
 		DumpBucketExcavator.addComponent(new YURTRover("Timer", 27, Component._dataType._int, "", Robot.READ_WRITE, 0, Integer.MAX_VALUE));
 	rover.addComponent(DumpBucketExcavator);
-		Component numberTwelve = new YURTRover("Ctrl12", 12, Component._dataType._int, "12");
-		numberTwelve.addComponent(new YURTRover("Client ID", 0, Component._dataType._int, "-1", Robot.READ_ONLY));// Device ID
-		numberTwelve.addComponent(new YURTRover("Power", 11, Component._dataType._int, "0", Robot.READ_WRITE, -128d, 127d));// [-128,127]
-		numberTwelve.addComponent(new YURTRover("Break", 12, Component._dataType._int, "0", Robot.READ_WRITE, 0, 1));// [0,1]
-		numberTwelve.addComponent(new YURTRover("Position", 13, Component._dataType._int, "", Robot.READ_WRITE, Integer.MIN_VALUE, Integer.MAX_VALUE));// [0,1]
-		numberTwelve.addComponent(new YURTRover("Faults", 14, Component._dataType._int, "", Robot.READ_ONLY, 0, 7));
-		numberTwelve.addComponent(new YURTRover("Driver Vcc", 15, Component._dataType._int, "", Robot.READ_ONLY, 0, 1023));// [0, 1023]
-		numberTwelve.addComponent(new YURTRover("Load Current", 16, Component._dataType._int, "", Robot.READ_ONLY, 0, 1023));// [0, 1023]
-		numberTwelve.addComponent(new YURTRover("Timer", 17, Component._dataType._int, "", Robot.READ_WRITE, 0, Integer.MAX_VALUE));
 		
-		numberTwelve.addComponent(new YURTRover("Power", 21, Component._dataType._int, "0", Robot.READ_WRITE, -128d, 127d));// [-128,127]
-		numberTwelve.addComponent(new YURTRover("Break", 22, Component._dataType._int, "0", Robot.READ_WRITE, 0, 1));// [0,1]
-		numberTwelve.addComponent(new YURTRover("Position",23, Component._dataType._int, "", Robot.READ_WRITE, Integer.MIN_VALUE, Integer.MAX_VALUE));// [0,1]
-		numberTwelve.addComponent(new YURTRover("Faults", 24, Component._dataType._int, "", Robot.READ_ONLY, 0, 7));
-		numberTwelve.addComponent(new YURTRover("Driver Vcc", 25, Component._dataType._int, "", Robot.READ_ONLY, 0, 1023));// [0, 1023]
-		numberTwelve.addComponent(new YURTRover("Load Current", 26, Component._dataType._int, "", Robot.READ_ONLY, 0, 1023));// [0, 1023]
-		numberTwelve.addComponent(new YURTRover("Timer", 27, Component._dataType._int, "", Robot.READ_WRITE, 0, Integer.MAX_VALUE));
-	rover.addComponent(numberTwelve);
 		return rover;
 	}
 //	public static YURTRover buildRoverModel() {

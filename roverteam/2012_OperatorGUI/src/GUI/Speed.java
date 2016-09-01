@@ -1,6 +1,4 @@
-package gui.component;
-
-
+package GUI;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -13,35 +11,36 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class SpeedBar extends GUIComponent {
+public class Speed extends GUIComponent {
 	public static final int DEFAULT_WIDTH = 200;
 	public static final int DEFAULT_HEIGHT = 40;
 	public static final Color DEFAULT_BOX_COLOR = Color.black;
 	
+	public UpdateSpeed uSpeed;
 	public final int MAXAveragespeed  = 100;
 	private ArrayList<double[]> speeds;
 	private double Averagespeed;
 	private Color[] colorRect, colorReverse;
 //---------------------------             CONSTRUCTORS             ---------------------------//
-	private SpeedBar(int x, int y, float transparency) {
+	private Speed(int x, int y, float transparency) {
 		this(x,y,DEFAULT_WIDTH, DEFAULT_HEIGHT,transparency);
 	}
-	private SpeedBar(int x, int y, int width, int height, float transparency) {
+	private Speed(int x, int y, int width, int height, float transparency) {
 		super(x,y,width,height,transparency);
 		initVars();
 	}
-	public SpeedBar(int x, int y, float transparency, double[]speed1, double[]speed2,double[] speed3, double[] speed4) {
+	public Speed(int x, int y, float transparency, double[]speed1, double[]speed2,double[] speed3, double[] speed4) {
 		this(x,y,DEFAULT_WIDTH, DEFAULT_HEIGHT,transparency, speed1,speed2,speed3,speed4);
 	}
-	public SpeedBar(int x, int y, int width, int height, float transparency, double[]speed1, double[]speed2,double[] speed3, double[] speed4) {
+	public Speed(int x, int y, int width, int height, float transparency, double[]speed1, double[]speed2,double[] speed3, double[] speed4) {
 		super(x,y,DEFAULT_WIDTH, DEFAULT_HEIGHT,transparency);
 		setTelemetry(speed1, speed2, speed3, speed4);
 		initVars();
 	}
-	public SpeedBar(int x, int y, float transparency, ArrayList<double[]> speeds) {
+	public Speed(int x, int y, float transparency, ArrayList<double[]> speeds) {
 		this(x,y,DEFAULT_WIDTH, DEFAULT_HEIGHT,transparency, speeds);
 	}
-	public SpeedBar(int x, int y, int width, int height, float transparency, ArrayList<double[]> speeds) {
+	public Speed(int x, int y, int width, int height, float transparency, ArrayList<double[]> speeds) {
 		super(x,y,width,height,transparency);
 		setTelemetry(speeds);
 		initVars();
@@ -59,6 +58,8 @@ public class SpeedBar extends GUIComponent {
 			colorReverse[i] = new Color(0,0,color);
 			color -= 10;
 		}
+		//colorReverse
+		uSpeed = new UpdateSpeed(speeds);
 	}
 //---------------------------              FUNCTIONS              ---------------------------//
 	public void setTelemetry(double[]speed1, double[]speed2,double[] speed3, double[] speed4) {
@@ -70,6 +71,10 @@ public class SpeedBar extends GUIComponent {
 	}
 	public void setTelemetry(ArrayList<double[]> speeds) {
 		this.speeds = speeds;
+	}
+	public void updateDisplay(double AverageSpeed) {
+		this.Averagespeed = AverageSpeed;
+		this.repaint();
 	}
 	@Override
 	public void paintBuffer( Graphics g ) {
@@ -96,6 +101,38 @@ public class SpeedBar extends GUIComponent {
 		}
 		g.drawString(""+Averagespeed, width/2-y, 14);
 	}
+
+	public class UpdateSpeed extends UpdateFunction {
+		ArrayList<double[]> speeds, temp;
+		double AverageSpeed;
+		double prevSpeed = 0; // set the speed to 0, that way, right off the bat, 
+		//the values are different and the screen gets updated  
+		
+		public UpdateSpeed(ArrayList<double[]> speeds) 
+		{
+			this.speeds = speeds;
+			this.temp = new ArrayList<double[]>();
+			for(int i = 0; i < speeds.size(); i++)
+				temp.add(speeds.get(i));
+			this.AverageSpeed = (speeds.get(0)[0]+speeds.get(1)[0]+speeds.get(2)[0]+speeds.get(3)[0])/4*127; //sets the speed 
+			//System.out.println("average is "+ AverageSpeed);
+		}
+		
+		public boolean checkValues() 
+		{
+			for(int i = 0; i < speeds.size(); i++)
+				if(temp.get(i) != speeds.get(i)) return true;
+			return false;
+		}
+	
+		public void doUpdate() {
+			for(int i = 0; i < speeds.size(); i++) {
+				temp.set(i, speeds.get(i));
+			}
+			this.AverageSpeed = (speeds.get(0)[0]+speeds.get(1)[0]+speeds.get(2)[0]+speeds.get(3)[0])/4; //sets the speed 
+			updateDisplay(Averagespeed);
+		}
+	} // end of update speed class 
 //----------------------------        TEST        ------------------------------//
    	public static void main(String[] args) {
 			boolean v1 = true; 
@@ -120,7 +157,7 @@ public class SpeedBar extends GUIComponent {
    		//frame.add(fpanel);
    		fpanel.setLayout(null);
    		double speed1[] = new double[]{0}, speed2[] = new double[]{0}, speed3[] = new double[]{0}, speed4[] = new double[]{0};
-			SpeedBar constructorCall = new SpeedBar(A,B,width,height,1f,speed1,speed2,speed3,speed4);
+			Speed constructorCall = new Speed(A,B,width,height,1f,speed1,speed2,speed3,speed4);
    		fpanel.add(constructorCall);
    		frame.add(fpanel);
    		frame.setVisible(true);
@@ -136,7 +173,7 @@ public class SpeedBar extends GUIComponent {
 			speed3[0] = speed2[0];
 			speed4[0] = speed3[0];
 			System.out.println(speed1[0]+"\n");
-			constructorCall.updateDisplay();
+			constructorCall.updateDisplay((speed1[0]+speed2[0]+speed3[0]+speed4[0])/4);
 			try { Thread.sleep(100);
    			} catch (InterruptedException e) { }
    		} while (true);

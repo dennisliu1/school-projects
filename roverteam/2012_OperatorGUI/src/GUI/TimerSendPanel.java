@@ -1,4 +1,4 @@
-package baseOperations;
+package GUI;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -13,8 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import comm.UDP.UDPClient;
-
+import Comm.UDP.UDPClient;
 
 public class TimerSendPanel extends JPanel {
 	public static final String DEFAULT_START_STRING = "Start";
@@ -22,14 +21,13 @@ public class TimerSendPanel extends JPanel {
 	public static final String DEFAULT_RESET_STRING = "Reset";
 	public static final String DEFAULT_SEND_STRING = "Send";
 	public static final String DEFAULT_NO_SEND_STRING = "No Send";
-	public static final String DEFAULT_RESET_TIME = "1:0:0";
 	private JPanel groups[];
 	private JLabel formatLabel;
 	private JTextField currentTime;
 	private JTextField resetTo;
 	private JButton ssButton;
 	private JButton resetButton;
-	private JTextField IPField,portField,receivePortField;
+	private JTextField IPField,portField;
 	private JButton sendButton;
 	private UDPClient client;
 	private long time;
@@ -47,15 +45,10 @@ public class TimerSendPanel extends JPanel {
 		currentTime = new JTextField(10);
 		currentTime.setEditable(false);
 		resetTo = new JTextField(10);
-		resetTo.setText(DEFAULT_RESET_TIME);
 		ssButton = new JButton(DEFAULT_START_STRING);
 		resetButton = new JButton(DEFAULT_RESET_STRING);
 		IPField = new JTextField(10);
-		IPField.setText(client.getSendIP());
 		portField = new JTextField(5);
-		portField.setText(client.getSendPort()+"");
-		receivePortField = new JTextField(5);
-		receivePortField.setText(client.getReceivePort()+"");
 		sendButton = new JButton(DEFAULT_SEND_STRING);
 
 		groups[0].add(formatLabel);
@@ -65,7 +58,6 @@ public class TimerSendPanel extends JPanel {
 		groups[1].add(resetTo);
 		groups[1].add(resetButton);
 		groups[2].add(IPField);
-		groups[2].add(receivePortField);
 		groups[2].add(portField);
 		groups[2].add(sendButton);
 		
@@ -82,13 +74,12 @@ public class TimerSendPanel extends JPanel {
 	public void drawTime(long time) {
 		if(time >= 0) {
 			String s2[] = new String[3];
-			long timerr = time;
-			timerr /= 1000;
-			s2[0] = ""+(timerr/3600);
-			timerr -= (timerr/3600);
-			s2[1] = ""+(timerr/(60));
-			timerr -= (timerr/60)*60;
-			s2[2] = ""+timerr;
+			time /= 1000;
+			s2[0] = ""+(time/(60*60));
+			time -= (time/60);
+			s2[1] = ""+(time/(60));
+			time -= (time/60);
+			s2[2] = ""+(time/(60));
 			currentTime.setText(s2[0]+":"+s2[1]+":"+s2[2]);
 			System.out.printf("%s:%s:%s %d\n", s2[0],s2[1],s2[2], this.time);
 		}
@@ -127,7 +118,7 @@ public class TimerSendPanel extends JPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(((JButton)e.getSource()).getText().equals(DEFAULT_SEND_STRING)) {
-				client.setUDPSettings(IPField.getText(), Integer.parseInt(portField.getText()), Integer.parseInt(receivePortField.getText()));
+				client.setUDPSettings(IPField.getText(), Integer.parseInt(portField.getText()), Integer.parseInt(portField.getText()));
 				client.startUDPConnection();
 				client.startThreads();
 				((JButton)e.getSource()).setText(DEFAULT_NO_SEND_STRING);
@@ -141,15 +132,12 @@ public class TimerSendPanel extends JPanel {
 	}//UDPActionListener class
 	
 	public class SendThread extends Thread {
-		boolean isRunning = true, pause = false;
+		boolean isRunning = true, pause = true;
 		public void run() {
 			while(isRunning) {
 				while(pause) { try{ Thread.sleep(1); }catch(InterruptedException e){} }
 				if(time > 0) {
-					if(client.isClientStarted())  {
-						client.sendPacket("time="+time);
-						System.out.printf("send time:%s\n",time);
-					}
+					if(client.isClientStarted()) client.sendPacket("time."+time);
 					time -= 1000;
 					drawTime(time);
 				}
@@ -161,13 +149,14 @@ public class TimerSendPanel extends JPanel {
 	
 	public static void main(String[] a) {
 		int width = 200, height = 200;
-		JFrame frame = new JFrame("Timer Control GUI");
+		JFrame frame = new JFrame("Operator GUI");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			UDPClient client = new UDPClient("localhost",4000,4001);
+			UDPClient client = new UDPClient("localhost",4000,4000);
 			TimerSendPanel panel = new TimerSendPanel(client);
 		frame.add(panel);
-		frame.setSize(300, 200);
+		frame.setSize(300, 150);
 		//frame.pack();
 		frame.setVisible(true);
+		
 	}
 }//TimerSendPanel class

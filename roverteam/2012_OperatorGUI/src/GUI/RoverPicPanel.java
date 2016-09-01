@@ -2,9 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package gui.component;
-
-
+package GUI;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -27,6 +25,8 @@ public class RoverPicPanel extends GUIComponent {
 	public static final Color DEFAULT_REVERSE_COLOR = Color.pink;
 	
 	private ArrayList<double[]> speeds;
+	public UpdateSpeed updateSpeed;
+
 	private int pX, pY, wheelDistWidth,wheelDistHeight;
 	private int wheelWidth, wheelHeight, a,b;
 //---------------------------             CONSTRUCTORS             ---------------------------//
@@ -48,7 +48,6 @@ public class RoverPicPanel extends GUIComponent {
 	public RoverPicPanel(int x, int y, int width, int height, float transparency, double[]speed1, double[] speed2, double[] speed3, double[] speed4) {
 		super(x,y,width,height,transparency);
 		speeds = new ArrayList<double[]>();
-		for(int i = 0; i < 4; i++) speeds.add(new double[1]); //creates an empty set of numbers
 		setTelemetry(speed1,speed2,speed3,speed3);
 		initVars();
 	}
@@ -65,6 +64,7 @@ public class RoverPicPanel extends GUIComponent {
 		wheelDistWidth = 50; wheelDistHeight = 10;
 		wheelWidth = 15; wheelHeight = 50;
 		a = pX; b = pY;
+		updateSpeed = new UpdateSpeed(speeds);
 	}
 //---------------------------               FUNCTIONS               ---------------------------//
 	/**
@@ -122,11 +122,49 @@ public class RoverPicPanel extends GUIComponent {
 			g.drawString(""+speeds.get(i)[0], a,b);
 		}//for loop
 	}//paintBuffer method
+
+	/**
+	 * Redraws the GUIComponent.
+	 */
+	public void updateDisplay() {
+		this.repaint();
+	}
+	
+	public class UpdateSpeed extends UpdateFunction {
+		private ArrayList<double[]> speeds, temp;
+		
+		public UpdateSpeed(ArrayList<double[]> speeds) {
+			this.speeds = speeds;
+			this.temp = new ArrayList<double[]>();
+			for(int i = 0; i < speeds.size(); i++)
+				temp.add(speeds.get(i));
+		}
+		/**
+		 * change the pointer of the telemetry to a new set of data.
+		 */
+		public void setTelemetry(ArrayList<double[]> speeds) {
+			this.speeds = speeds;
+		}
+		
+		public boolean checkValues() 
+		{
+			for(int i = 0; i < speeds.size(); i++)
+				if(temp.get(i) != speeds.get(i)) return true;
+			return false;
+		}
+	
+		public void doUpdate() {
+			for(int i = 0; i < speeds.size(); i++) {
+				temp.set(i, speeds.get(i));
+			}
+			updateDisplay();
+		}
+	} // end of update speed class 
 //---------------------------             TESTING MAIN              ---------------------------//
 	public static void main(String[] args) {
 			boolean v1 = true; 
-			int A= 0;
-			int B= 0;
+			int A= 75;
+			int B=100;
 			double[] speed1 = new double[]{0};
 			double[] speed2 = new double[]{0};
 			double[] speed3 = new double[]{0};
@@ -136,6 +174,8 @@ public class RoverPicPanel extends GUIComponent {
    		JFrame frame = new JFrame(); 
    		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
    		frame.setTitle("Speed - test");
+   		//frame.setSize(800, 800);
+   		
    		//-----------Main panel------------
 			RoverPicPanel constructorCall = new RoverPicPanel(A,B,1f, speed1,speed2,speed3,speed4);
    		frame.add(constructorCall);

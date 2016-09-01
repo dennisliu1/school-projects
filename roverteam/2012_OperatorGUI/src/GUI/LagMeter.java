@@ -1,10 +1,8 @@
-package gui.component;
+package GUI;
 
 // Created by Dachuan Huang
 // Rover Lag-meter display
 // Version 3.0
-
-
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -19,6 +17,7 @@ public class LagMeter extends GUIComponent {
 	  private int bound2;		// custom defined bound for signal strength
 	  private int bound3;		// custom defined bound for signal strength
 	  private int bound4;		// custom defined bound for signal strength
+	  public LagMeterUpdateFunction muf;		// a sub class to use Updatefunction
 	  public static final int _width = 80;	// width of the GUI
 	  public static final int _height = 60;	// height of the GUI
 		public static final Color DEFAULT_BAR_COLOR = Color.red;
@@ -31,6 +30,7 @@ public class LagMeter extends GUIComponent {
 	  public LagMeter(int x, int y, int width, int height, float transparency, int[] latency) {
 		  super(x,y,width,height,transparency);	// pass to GUIComponent to construct its parent class
 		  this.latency = latency;
+		  initVars();
 		}
 		public LagMeter(int x, int y, float transparency, int[] latency) {
 			this(x,y, _width, _height, transparency, latency);
@@ -38,23 +38,33 @@ public class LagMeter extends GUIComponent {
 		public LagMeter(int x, int y, int width, int height,float transparency) {
 			super(x,y, width,height, transparency);
 			this.latency = new int[1];
+			initVars();
 		}
 		public LagMeter(int x, int y, float transparency) {
 			this(x,y, _width, _height, transparency);
+		}
+		private void initVars() {
+		  muf = new LagMeterUpdateFunction(latency);
 		}
 //---------------------------               FUNCTIONS               ---------------------------//
 		public void setTelemetry(int[] latency) {
 			this.latency = latency;
 		}
-		/** Allow bounds to be set and adjusted */
-		public void setLMBounds(int bound1, int bound2, int bound3, int bound4) {
-			this.bound1 = bound1;
-			this.bound2 = bound2;
-			this.bound3 = bound3;
-			this.bound4 = bound4;
-		}
-		/** Custom paint method to draw lag meters */
-		public void paintBuffer(Graphics g) {
+	  /** Allow bounds to be set and adjusted */
+	  public void setLMBounds(int bound1, int bound2, int bound3, int bound4) {
+		  this.bound1 = bound1;
+		  this.bound2 = bound2;
+		  this.bound3 = bound3;
+		  this.bound4 = bound4;
+	  }
+	  
+	  /** Allow constant update for latency rate */
+	  public void updateDisplay() {
+		  this.repaint();
+	  }
+	  	  
+	  /** Custom paint method to draw lag meters */
+	  public void paintBuffer(Graphics g) {
 			g2 = (Graphics2D)g;
 		  //super.paint(g);
 			super.paintComponent(g);
@@ -88,6 +98,36 @@ public class LagMeter extends GUIComponent {
 			g2.drawRect(0, 0, width-1, height-1);
 		  //this.repaint();
 	  }
+	  
+	  /** MyUpdateFunction implements two abstract class from parent */
+	  class LagMeterUpdateFunction extends UpdateFunction {
+		  private int[] old, latency;
+
+		  /** default constructor */
+		  public LagMeterUpdateFunction(int[] latency) {
+		  	this.latency = latency;
+		  	this.old = new int[1];
+		  	this.old[0] = latency[0];
+		  }
+		  
+		  /** Note: parent has function: update() that uses the two methods below */
+		  
+		  /** Check to see if there's a new value update */
+		  public boolean checkValues() {
+			  if (old[0] != latency[0]) {
+				  return true;
+			  }
+			  return false;
+		  }
+		  
+		  /** Update the current value to the new value */
+		  public void doUpdate() {
+		  	this.old[0] = latency[0];
+				self.updateDisplay();
+		  }	   	  
+	  }
+		
+		
 		
 		/** The main method */
 	  public static void main(String[] a) throws IOException {
@@ -129,7 +169,7 @@ public class LagMeter extends GUIComponent {
 	    	}
 	    	
 	    	/* call update function to check for new values */
-	    	lm.updateDisplay();			
+	    	lm.muf.update();			
 	    }  
 	  }
 }//LagMeter class

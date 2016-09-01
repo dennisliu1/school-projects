@@ -1,25 +1,16 @@
-package gui;
-
-import gui.component.GUIComponent;
+package GUI;
 
 import javax.swing.JFrame;
 
-import comm.TCP.TCPClient;
+import Comm.TCP.TCPClient;
 
-/**
- * This is the controller for the TCP Connection for the compass/client telemetry. It asks for info,
- * parses the message back, and updates the displays of the components.
- * @author dennis
- *
- */
 public class CompassTelemetry {
+	
 	TCPClient client;
 	long[] degree;
 	double[] tiltx;
 	double[] tilty;
 	private SendThread sendThread;
-	
-	GUIComponent compassPanel, tiltPanel;
 	
 	public CompassTelemetry(TCPClient client, long[] degree, double[] tiltx, double[] tilty) {
 		this.client = client;
@@ -28,12 +19,6 @@ public class CompassTelemetry {
 		this.tilty = tilty;
 		sendThread = new SendThread();
 		sendThread.start();
-	}
-	public void setCompassPanel(GUIComponent compassPanel) {
-		this.compassPanel = compassPanel;
-	}
-	public void setTiltPanel(GUIComponent tiltPanel) {
-		this.tiltPanel = tiltPanel;
 	}
 	
 	public class SendThread extends Thread {
@@ -51,18 +36,11 @@ public class CompassTelemetry {
 					prevStr = receiveStr;
 					String s = prevStr;
 					if(prevStr.indexOf(' ') >= 0) {
-						if(degree != null) {
-							degree[0] = Long.parseLong(s.substring(0,s.indexOf(' ')));
-							if(compassPanel != null) compassPanel.updateDisplay();
-						}
+						degree[0] = Long.parseLong(s.substring(0,s.indexOf(' ')));
 						s = s.substring(s.indexOf(' ')+1);
-						if(tiltx != null && tilty != null) {
-							tiltx[0] = Long.parseLong(s.substring(0,s.indexOf(' ')));
-							s = s.substring(s.indexOf(' ')+1);
-							tilty[0] = Long.parseLong(s);
-							if(tiltPanel != null) tiltPanel.updateDisplay();
-						}
-						
+						tiltx[0] = Long.parseLong(s.substring(0,s.indexOf(' ')));
+						s = s.substring(s.indexOf(' ')+1);
+						tilty[0] = Long.parseLong(s);
 					}
 					System.out.printf("got:%s %d\n", prevStr, degree[0]);
 				}
@@ -70,6 +48,9 @@ public class CompassTelemetry {
 			}
 		}
 	}//SendThread class
+	
+	
+	
 	
 	public static void main(String[] args) {
 		TCPClient client = new TCPClient("192.168.80.121", 30150);

@@ -6,8 +6,7 @@ package cameraTabs;
  * Date: Mar 12, 2009.
  */
 
-import gui.VideoPanel;
-
+import GUI.VideoPanel;
 import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.Image;

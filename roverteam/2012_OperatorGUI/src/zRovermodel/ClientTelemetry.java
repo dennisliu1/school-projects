@@ -4,19 +4,15 @@
  */
 package zRovermodel;
 
-import gui.OperatorGUI;
-import gui.component.GUIComponent;
-
+import Comm.ParamFunction;
+import Comm.Test.UDPClientGUI;
+import Comm.UDP.UDPClient;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
-
-import comm.ParamFunction;
-import comm.Test.UDPClientGUI;
-import comm.UDP.UDPClient;
 
 /**
  * This class creates a UDP connection with the communications protocol,
@@ -36,22 +32,15 @@ import comm.UDP.UDPClient;
  * @author dennis
  */
 public class ClientTelemetry {
-	public static int NUM_READS = 5;
-	public static final int DEFAULT_RESET_TIME = 9000;
-	public static final int DEFAULT_READ_TIME = 3000;
+	public static final int DEFAULT_RESET_TIME = 3000;
+	public static final int DEFAULT_READ_TIME = 5000;
 	private UDPClient client;
 	private ReceiveParamFunction receiveFunct;
 	private SendThread sendThread;
 	private ResetThread resetThread;
-	private TimeThread timeThread;
 	public YURTRover rover;
 	private ArrayList<ArrayList<double[]>> telemetry;
-	public long time[];
-	public String signal[];
-	public boolean sendTime = true;
-	private ArrayList<ArrayList<GUIComponent>> components;
-	private GUIComponent signalComponent, timeComponent,tableComponent,tableComponentTwo;
-	private OperatorGUI gui;
+	private long time[];
 	
 	public ClientTelemetry(UDPClient client, YURTRover rover) {
 		this.client = client;
@@ -59,21 +48,17 @@ public class ClientTelemetry {
 		receiveFunct = new ReceiveParamFunction();
 		client.addReceiveFunct(receiveFunct);
 		telemetry = new ArrayList<ArrayList<double[]>>();//build telemetry list
-		components = new ArrayList<ArrayList<GUIComponent>>();
 		for(int i = 0; i < rover.getComponents().size(); i++) {
 			telemetry.add(new ArrayList<double[]>());
-			components.add(new ArrayList<GUIComponent>());
 			for(int j = 0; j < rover.getComponents().get(i).getComponents().size(); j++) {
 				telemetry.get(i).add(null);//add placeholder
-				components.get(i).add(null);
 				((SerializedComponent)rover.getComponents().get(i).getComponents().get(j)).setTime(System.currentTimeMillis());
+				((SerializedComponent)rover.getComponents().get(i).getComponents().get(j)).setResetTimer(-1);//set default reset timer
+				((SerializedComponent)rover.getComponents().get(i).getComponents().get(j)).setReadTimer(-1);//set default read timer
 			}
 		}
-		
 		sendThread = new SendThread();
 		sendThread.start();
-		timeThread = new TimeThread();
-		timeThread.start();
 		resetThread = new ResetThread();
 		resetThread.start();
 	}
@@ -97,24 +82,29 @@ public class ClientTelemetry {
 	}
 	public ArrayList<double[]> buildVoltages() {
 		ArrayList<double[]> arr = new ArrayList<double[]>();
-		for(int i = 0; i < getNumComponents()*2; i++) {
+		for(int i = 0; i < getNumComponents(); i++) {
 			arr.add(new double[1]);
 		}
 //		for(int i = 0; i < rover.getComponents().size(); i++) {
 //			addTelemetry(rover.getComponents().get(i).getIdentifier(), 15, arr.get(i));
-//			addTelemetry(rover.getComponents().get(i).getIdentifier(), 25, arr.get(i));
 //		}
+		
+//		int device = rover.getDeviceID( );
+//		int field = rover.getFieldID(device, );
+//		addTelemetry(rover.getComponents().get(device).getIdentifier(), field, arr.get(device));
+		
+		//device = rover.getDeviceID();
+		//field = rover.getFieldID(device, );
 		return arr;
 	}
 	public ArrayList<double[]> buildCurrents() {
 		ArrayList<double[]> arr = new ArrayList<double[]>();
-		for(int i = 0; i < getNumComponents()*2; i++) {
+		for(int i = 0; i < getNumComponents(); i++) {
 			arr.add(new double[1]);
 		}
-//		for(int i = 0; i < rover.getComponents().size(); i++) {
-//			addTelemetry(rover.getComponents().get(i).getIdentifier(), 16, arr.get(i));
-//			addTelemetry(rover.getComponents().get(i).getIdentifier(), 26, arr.get(i));
-//		}
+		for(int i = 0; i < rover.getComponents().size(); i++) {
+			addTelemetry(rover.getComponents().get(i).getIdentifier(), 16, arr.get(i));
+		}
 		return arr;
 	}
 	
@@ -128,24 +118,6 @@ public class ClientTelemetry {
 	public void addTimeTelemetry(long[] time) {
 		this.time = time;
 	}
-	public void addSignalTelemetry(String[] signal) {
-		this.signal = signal;
-	}
-	public void setSignalComponent(GUIComponent signal) {
-		this.signalComponent = signal;
-	}
-	public void setTimerComponent(GUIComponent timer) {
-		this.timeComponent = timer;
-	}
-	public void setTableComponent(GUIComponent timer) {
-		this.tableComponent = timer;
-	}
-	public void setTableTwoComponent(GUIComponent timer) {
-		this.tableComponentTwo = timer;
-	}
-	public void setOperatorGUI(OperatorGUI gui) {
-		this.gui = gui;
-	}
 	public boolean addTelemetry(int did, int fid, double[] arr) {
 		int device = -1, field = -1;
 		device = rover.getDeviceID(did);
@@ -154,26 +126,8 @@ public class ClientTelemetry {
 		if(device >= 0 && field >= 0) {
 			telemetry.get(device).remove(field);
 			telemetry.get(device).add(field, arr);
-			return true;
-		} return false;
-	}
-	public boolean setTelemetryResetTime(int did, int fid, int resetTime) {
-		int device = -1, field = -1;
-		device = rover.getDeviceID(did);
-		if(device >= 0) field = rover.getFieldID(device, fid);
-		//telemetry.get(did).remove(fid);
-		if(device >= 0 && field >= 0) {
-			((SerializedComponent)rover.getComponents().get(device).getComponents().get(field)).setResetTimer(resetTime);
-			return true;
-		} return false;
-	}
-	public boolean setTelemetryReadTime(int did, int fid, int readTime) {
-		int device = -1, field = -1;
-		device = rover.getDeviceID(did);
-		if(device >= 0) field = rover.getFieldID(device, fid);
-		//telemetry.get(did).remove(fid);
-		if(device >= 0 && field >= 0) {
-			((SerializedComponent)rover.getComponents().get(device).getComponents().get(field)).setReadTimer(readTime);
+			((SerializedComponent)rover.getComponents().get(device).getComponents().get(field)).setResetTimer(DEFAULT_RESET_TIME);
+			((SerializedComponent)rover.getComponents().get(device).getComponents().get(field)).setReadTimer(DEFAULT_READ_TIME);
 			return true;
 		} return false;
 	}
@@ -186,82 +140,73 @@ public class ClientTelemetry {
 		public void execute() {
 			s = client.getReceiveString();
 			sORI = s.substring(0);
-			System.out.printf("Client get %s\n", sORI);
-			
-			if(sORI.startsWith("time=")) {
-				if(time != null) try {
-					time[0] = Long.parseLong(sORI.split("=")[1]);
-					if(timeComponent != null)
-						timeComponent.updateDisplay();
-				} catch(Exception e) {}
-			} else if(sORI.startsWith("Quality=")) {
-//				System.out.printf("q:%s\n", sORI.split("=")[1]);
-				if(signal != null) try {
-					signal[0] = sORI.split("=")[1];
-					if(signalComponent != null)
-						signalComponent.updateDisplay();
-				} catch(Exception e) {}
-			} else if(sORI.startsWith("GUI=Video.left")) {
-				if(gui != null) {
-					gui.moveLeft();
-				}
-			} else if(sORI.startsWith("GUI=Video.right")) {
-				if(gui != null) {
-					gui.moveRight();
-				}
-			} else if(sORI.startsWith("GUI=Video.start")) {
-				if(gui != null) {
-					gui.startVideo();
-				}
-			} else if(sORI.startsWith("GUI=Video.stop")) {
-				if(gui != null) {
-					gui.stopVideo();
-				}
-			} else {
-				//split apprently does not work, so wrote it manually.
-				s = s.concat(".");
-				s2[0] = s.substring(0,1);
-				s = s.substring(1);
-				for(int i = 1; i < 4; i++) {
-					if(s.indexOf('.') != -1) {
-						s2[i] = s.substring(0, s.indexOf('.'));
-						s = s.substring(s.indexOf('.')+1);
-					} else break;
-				}
-				//PROCESS THE RECEIVED STRING HERE
-				if(s2[0] != null) {
-					if(s2[0].equals("r")) {
-						//System.out.printf("Client get %s:%s:%s:%s:\n", sORI,s2[0],s2[1],s2[2]);
-						int device = -1, field = -1;
-						try {
-							device = rover.getDeviceID(Integer.parseInt(s2[1]));
-						} catch(Exception e){ device = -1; System.out.printf("Bad message device:%s:", sORI); }
-						try {
-							field = rover.getFieldID(device, Integer.parseInt(s2[2]));
-							
-						} catch (Exception e) { field = -1; System.out.printf(" Bad message field:%s:", sORI); }
-						//System.out.printf("Client get %s\n", sORI);
-						if(s2[3] != null)
-						if(device >= 0 && field >= 0 && s2[3].length() > 0) {
-							rover.getComponents().get(device).getComponents().get(field).setData(s2[3]);
-							((SerializedComponent)rover.getComponents().get(device).getComponents().get(field)).setTime(System.currentTimeMillis());
-							setTelemetryData(device,field);
-							if(tableComponent != null)
-								tableComponent.updateDisplay();
-							if(tableComponentTwo != null)
-								tableComponentTwo.updateDisplay();
-						}//field >= 0
-					}//read section
-				}//if format matches
-				for(int i = 0; i < s2.length; i++)
-					s2[i] = "";
+			s = s.concat(".");
+			//split apprently does not work, so wrote it manually.
+			s2[0] = s.substring(0,1);
+			s = s.substring(1);
+			for(int i = 1; i < 4; i++) {
+				if(s.indexOf('.') != -1) {
+					s2[i] = s.substring(0, s.indexOf('.'));
+					s = s.substring(s.indexOf('.')+1);
+				} else break;
 			}
+			//PROCESS THE RECEIVED STRING HERE
+			if(s2[0] != null) {
+				if(s2[0].startsWith("time:")) {
+					if(time != null) time[0] = Long.parseLong(s2[0].substring(5));
+				}
+				if(s2[0].equals("r")) {
+					System.out.printf("Client get %s:%s:%s:%s:\n", sORI,s2[0],s2[1],s2[2]);
+					int device = -1, field = -1;
+					try {
+						device = rover.getDeviceID(Integer.parseInt(s2[1]));
+						System.out.printf("Bad message device:%s:", sORI);
+					} catch(Exception e){ device = -1; }
+					try {
+						field = rover.getFieldID(device, Integer.parseInt(s2[2]));
+						System.out.printf("Bad message field:%s:", sORI);
+					} catch (Exception e) { field = -1; }
+					//System.out.printf("Client get %s\n", sORI);
+					if(s2[3] != null)
+					if(device >= 0 && field >= 0 && s2[3].length() > 0) {
+						rover.getComponents().get(device).getComponents().get(field).setData(s2[3]);
+						((SerializedComponent)rover.getComponents().get(device).getComponents().get(field)).setTime(System.currentTimeMillis());
+						if(telemetry.size() >= device) {
+							if(telemetry.get(device).size() >= field) {
+								if(telemetry.get(device).get(field) != null) {
+									//System.out.printf("got %s %s: %s\n", s2[1],s2[2],s2[3]);
+									telemetry.get(device).get(field)[0] = Double.parseDouble(rover.getComponents().get(device).getComponents().get(field).getData());
+								}
+							}
+						}
+//						System.out.printf("Client get %s:r.%s.%s.%s:\n", sORI,
+//							rover.getComponents().get(device).getIdentifier(),
+//							rover.getComponents().get(device).getComponents().get(field).getIdentifier(),
+//							rover.getComponents().get(device).getComponents().get(field).getData());
+						// if(s2[1].equals("12") && s2[2].equals("11")) {
+						// 	double num = Integer.parseInt(rover.getComponents().get(device).getComponents().get(field).getData());
+						// 	System.out.printf("Speed1: %f\n", num);
+						// } else if(s2[1].equals("12") && s2[2].equals("21")) {
+						// 	double num = Integer.parseInt(rover.getComponents().get(device).getComponents().get(field).getData());
+						// 	System.out.printf("Speed2: %f\n", num);
+						// } else if(s2[1].equals("12") && s2[2].equals("14")) {
+						// 	double voltage = Integer.parseInt(rover.getComponents().get(device).getComponents().get(field).getData())/1023.0 * 5.0 *(2.7+10)/2.7;
+						// 	System.out.printf("voltage: %f\n", voltage);
+						// } else if(s2[1].equals("12") && s2[2].equals("15")) {
+						// 	double voltage = Integer.parseInt(rover.getComponents().get(device).getComponents().get(field).getData())/1023.0 * 5.0 *(2.7+10)/2.7;
+						// 	System.out.printf("current: %f\n", voltage);
+						// }
+					}//field >= 0
+				}//read section
+			}//if format matches
+			for(int i = 0; i < s2.length; i++)
+				s2[i] = "";
 		}//execute()
 	}//ReceiveParamFunction class
 	
 	
 	/**
-	 * Does the sending of the requests for telemetry updates. 
+	 * Does the sending of the 
 	 */
 	public class SendThread extends Thread {
 		boolean isRunning;
@@ -275,25 +220,22 @@ public class ClientTelemetry {
 		
 		public void run() {
 			int speed = 0, dir = 1;
-			Calendar c = Calendar.getInstance();
 			while(isRunning) {
 				if(client.threadStarted) {
-					//voltage/1023.0 * 5.0 *(2.7+10)/2.7
-					c.setTime(new Date(System.currentTimeMillis()));
-					for(int i = 0; i < rover.getComponents().size(); i++) {
-						for(int j = 0; j < rover.getComponents().get(i).getComponents().size(); j++) {
-							if(((SerializedComponent)rover.getComponents().get(i).getComponents().get(j)).isPastReadTime(c)) {
-								if(client.sendPacket("r"+rover.getComponents().get(i).getIdentifier()+"."+rover.getComponents().get(i).getComponents().get(j).getIdentifier())) {
-									System.out.printf("GUI Sends %s\n", "r"+rover.getComponents().get(i).getIdentifier()+"."+rover.getComponents().get(i).getComponents().get(j).getIdentifier());
+					if(counter%1000 == 0) {//check every second
+						//voltage/1023.0 * 5.0 *(2.7+10)/2.7
+						Calendar c = Calendar.getInstance();
+						c.setTime(new Date(System.currentTimeMillis()));
+						for(int i = 0; i < rover.getComponents().size(); i++) {
+							for(int j = 0; j < rover.getComponents().get(i).getComponents().size(); j++) {
+								if(((SerializedComponent)rover.getComponents().get(i).getComponents().get(j)).isPastReadTime(c)) {
+									if(client.sendPacket("r"+rover.getComponents().get(i).getIdentifier()+"."+rover.getComponents().get(i).getComponents().get(j).getIdentifier())) {
+										setTelemetryData(i,j);
+										System.out.printf("GUI Sends %s\n", "r"+rover.getComponents().get(i).getIdentifier()+"."+rover.getComponents().get(i).getComponents().get(j).getIdentifier());
+									}
 								}
-								try { 
-									Thread.sleep(1000/NUM_READS);
-									if(counter < 1000/NUM_READS) counter = defaultCounter;
-									else counter -= 1000/NUM_READS;
-								} catch (InterruptedException ex) { }//sleep 1 ms
-								c.setTime(new Date(System.currentTimeMillis()));
-							}
-					}}
+						}}
+					}//check every second
 				}
 				try { Thread.sleep(1); } catch (InterruptedException ex) { }//sleep 1 ms
 				if(counter <= 1) counter = defaultCounter;
@@ -301,33 +243,6 @@ public class ClientTelemetry {
 			}//loop
 		}//run method
 	}//SendThread class
-	public class TimeThread extends Thread {
-		boolean isRunning;
-		int counter, defaultCounter;
-		
-		public TimeThread() {
-			isRunning = true;
-			defaultCounter = 1000;
-			counter = defaultCounter;
-		}
-		
-		public void run() {
-			int speed = 0, dir = 1;
-			Calendar c = Calendar.getInstance();
-			while(isRunning) {
-				if(client.threadStarted) {
-					if(counter == 0 && time != null && sendTime) {
-						client.sendPacket("time=");
-						client.sendPacket("Quality=");
-						System.out.printf("GUI Sends %s\n", "time=");
-					}
-				}
-				try { Thread.sleep(1); } catch (InterruptedException ex) { }//sleep 1 ms
-				if(counter < 0) counter = defaultCounter;
-				else counter--;
-			}//loop
-		}//run method
-	}//timeThread class
 	public class ResetThread extends Thread {
 		boolean isRunning;
 		int counter, defaultCounter;
@@ -350,10 +265,6 @@ public class ClientTelemetry {
 							if(((SerializedComponent)rover.getComponents().get(i).getComponents().get(j)).isPastResetTime(c)) {
 								rover.getComponents().get(i).getComponents().get(j).setData("-1");
 								setTelemetryData(i,j);
-								if(tableComponent != null)
-									tableComponent.updateDisplay();
-								if(tableComponentTwo != null)
-									tableComponentTwo.updateDisplay();
 							}
 						}
 					}

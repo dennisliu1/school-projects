@@ -2,9 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package gui.testing;
-
-import gui.component.GUIComponent;
+package GUI;
 
 import java.awt.Color;
 import java.awt.Graphics;
