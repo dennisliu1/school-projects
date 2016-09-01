@@ -1,12 +1,11 @@
 
-package comm.UDP.Conn;
+package Comm.UDP.Conn;
 
+import Comm.ParamFunction;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
-
-import comm.ParamFunction;
 
 /**
  * Creates a thread that sends packets to a destination. 
@@ -210,9 +209,7 @@ public class UDPSend {
 			}
 			//try and send a byte[]
 			send(sendQueue.get(0));
-			if(!sendQueue.isEmpty()) try {
-				sendQueue.remove(0);
-			} catch(Exception e) {}
+			if(!sendQueue.isEmpty()) sendQueue.remove(0);
 			//run functions
 			if(!threadFuncts.isEmpty()) {
 				for(int i = 0; i < threadFuncts.size(); i++)

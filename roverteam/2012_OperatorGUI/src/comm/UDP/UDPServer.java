@@ -2,13 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package comm.UDP;
+package Comm.UDP;
 
+import Comm.ParamFunction;
+import Comm.Test.UDPClientGUI;
 import java.util.TreeMap;
 import javax.swing.JFrame;
-
-import comm.ParamFunction;
-import comm.Test.UDPClientGUI;
 
 /**
  *

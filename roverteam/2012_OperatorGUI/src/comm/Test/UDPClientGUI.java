@@ -2,8 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package comm.Test;
+package Comm.Test;
 
+import Comm.UDP.UDPClient;
+import Comm.*;
+import Comm.UDP.Conn.UDPConnection;
+import Comm.UDP.UDPServer;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,11 +18,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-
-import comm.*;
-import comm.UDP.UDPClient;
-import comm.UDP.UDPServer;
-import comm.UDP.Conn.UDPConnection;
 
 /**
  *

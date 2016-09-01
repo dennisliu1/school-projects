@@ -1,4 +1,4 @@
-package comm;
+package Comm;
 
 /**
  * Function that runs while inside a thread. The function runs when significant changes are done inside the thread,

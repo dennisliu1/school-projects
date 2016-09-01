@@ -1,10 +1,9 @@
 
-package comm.TCP;
+package Comm.TCP;
 
+import Comm.ParamFunction;
+import Comm.TCP.Conn.TCPConnection;
 import java.util.ArrayList;
-
-import comm.ParamFunction;
-import comm.TCP.Conn.TCPConnection;
 
 /**
  * Creates a TCP Client connection. By specifying the IP and Port of the 

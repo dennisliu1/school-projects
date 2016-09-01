@@ -1,12 +1,11 @@
-package comm.Test;
+package Comm.Test;
 
+import Comm.ParamFunction;
+import Comm.TCP.TCPClient;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
-
-import comm.ParamFunction;
-import comm.TCP.TCPClient;
 
 /**
  *

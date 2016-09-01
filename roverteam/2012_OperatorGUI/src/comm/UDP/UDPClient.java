@@ -2,16 +2,15 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package comm.UDP;
+package Comm.UDP;
 
+import Comm.ParamFunction;
+import Comm.UDP.Conn.UDPConnection;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.JFrame;
-
-import comm.ParamFunction;
-import comm.UDP.Conn.UDPConnection;
 
 /**
  * Creates an UDP client connection. 

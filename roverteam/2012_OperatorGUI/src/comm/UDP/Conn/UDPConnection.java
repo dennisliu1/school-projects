@@ -1,11 +1,10 @@
 
-package comm.UDP.Conn;
+package Comm.UDP.Conn;
 
+import Comm.ParamFunction;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
-
-import comm.ParamFunction;
 
 /**
  * Opens a socket and allows sending/receiving from that socket. Sends through a

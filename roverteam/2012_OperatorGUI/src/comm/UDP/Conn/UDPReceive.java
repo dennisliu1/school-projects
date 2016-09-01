@@ -1,13 +1,12 @@
 
-package comm.UDP.Conn;
+package Comm.UDP.Conn;
 
+import Comm.ParamFunction;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
-
-import comm.ParamFunction;
 
 /**
  * Thread to keep receiving packets from the socket.
